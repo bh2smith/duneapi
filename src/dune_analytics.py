@@ -48,8 +48,6 @@ class ParameterType(Enum):
     TEXT = "text"
     NUMBER = "number"
     DATE = "datetime"
-    # TODO - not sure if this works or not...
-    # LIST = 'enum'
 
 
 class QueryParameter:
@@ -60,12 +58,10 @@ class QueryParameter:
         name: str,
         parameter_type: ParameterType,
         value: Any,
-        # options: Optional[list[str]] = None
     ):
         self.key: str = name
         self.type: ParameterType = parameter_type
         self.value = value
-        # self.options = options
 
     @classmethod
     def text_type(cls, name: str, value: str) -> QueryParameter:
@@ -82,20 +78,12 @@ class QueryParameter:
         """Constructs a Query parameter of type date"""
         return cls(name, ParameterType.DATE, value)
 
-    # @classmethod
-    # def list_type(cls, name: str, options: list[str], value: str):
-    #     """Constructs a Query parameter of type list"""
-    #     return cls(name, ParameterType.LIST, value, options)
-
     def _value_str(self) -> str:
         match self.type:
             case (ParameterType.TEXT):
                 return str(self.value)
             case (ParameterType.NUMBER):
                 return str(self.value)
-            # case (ParameterType.LIST):
-            #     # List items separated by new line as (specified by Dune)
-            #     return "\n".join(self.value)
             case (ParameterType.DATE):
                 # This is the postgres string format of timestamptz
                 return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
@@ -109,10 +97,6 @@ class QueryParameter:
             "type": self.type.value,
             "value": self._value_str(),
         }
-        # if self.type == ParameterType.LIST:
-        #     results["enumOptions"] = self.options
-        #     for i, val in enumerate(self.options):
-        #         results[i] = val
         return results
 
 

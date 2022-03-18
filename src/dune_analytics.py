@@ -186,10 +186,10 @@ class DuneAnalytics:
         else:
             raise SystemExit(response)
 
-    def login_and_fetch_auth(self) -> None:
-        """combines both of `login` and `fetch_auth_token`"""
-        self.login()
+    def refresh_auth_token(self):
+        """Set authorization token for the user"""
         self.fetch_auth_token()
+        self.session.headers.update({"authorization": f"Bearer {self.token}"})
 
     def initiate_new_query(
         self, query: str, name: str, network: Network, parameters: list[QueryParameter]
@@ -293,7 +293,7 @@ class DuneAnalytics:
         :param query: JSON content for request POST
         :return: response in json format
         """
-        self.session.headers.update({"authorization": f"Bearer {self.token}"})
+        self.refresh_auth_token()
         response = self.session.post(GRAPH_URL, json=query)
         response_json = response.json()
         if "errors" in response_json:
@@ -347,7 +347,8 @@ class DuneAnalytics:
                 log.warning(
                     f"fetch failed with {err}. Re-establishing connection and trying again"
                 )
-                self.login_and_fetch_auth()
+                self.login()
+                self.refresh_auth_token()
         raise Exception(f"Maximum retries ({self.max_retries}) exceeded")
 
     @staticmethod

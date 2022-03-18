@@ -1,4 +1,6 @@
 black==22.1.0
+mypy==0.941
 requests==2.27.1
 pylint==2.12.2
 pytest==7.0.1
+types-requests==2.27.13

@@ -17,6 +17,7 @@ class Record:
 
     @classmethod
     def from_dict(cls, obj: dict[str, str]) -> Record:
+        """Constructs Record from Dune Data as string dict"""
         return cls(
             string=obj["block_hash"],
             integer=int(obj["number"]),

@@ -335,7 +335,7 @@ class DuneAnalytics:
         query_str: str,
         network: Network,
         name: str,
-        parameters: Optional[list[dict[str, str]]],
+        parameters: Optional[list[dict[str, str]]] = None,
     ) -> list[dict]:
         """
         Pushes new query and executes, awaiting query completion

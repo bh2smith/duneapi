@@ -18,24 +18,19 @@ class TestDuneAnalytics(unittest.TestCase):
         self.dune.execute_and_await_results = MagicMock(return_value=1)
         self.dune.initiate_new_query = MagicMock(return_value=None)
         self.dune.open_query = MagicMock(return_value="")
-
+        self.dune.max_retries = 0
         with self.assertRaises(Exception):
-            self.dune._initiate_execute_await(
-                query_str="", network=Network.MAINNET, max_retries=0
-            )
+            self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query")
 
+        self.dune.max_retries = 2
         self.assertEqual(
-            self.dune._initiate_execute_await(
-                query_str="", network=Network.MAINNET, max_retries=1
-            ),
+            self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query"),
             1,
         )
 
         self.dune.execute_and_await_results = Mock(side_effect=Exception("Max retries"))
         with self.assertRaises(Exception):
-            self.dune._initiate_execute_await(
-                query_str="", network=Network.MAINNET, max_retries=2
-            )
+            self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query")
 
     def test_parse_response(self):
         sample_response = {

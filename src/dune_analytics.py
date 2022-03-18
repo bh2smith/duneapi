@@ -15,7 +15,7 @@ from typing import Optional, Any
 from requests import Session
 
 log = logging.getLogger(__name__)
-logging.config.fileConfig(fname='logging.conf', disable_existing_loggers=True)
+logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"

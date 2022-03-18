@@ -13,17 +13,13 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install Requirements
-        run:
-          pip install -r requirements.txt
-      - name: Lint
-        run:
-          pylint src/
-      - name: Black
-        run:
-          black --check ./
+        run: pip install -r requirements.txt
+      - name: Lint & Format
+        run: pylint src/ && black --check ./
+      - name: Type Check
+        run: mypy src --strict
       - name: Unit Tests
-        run:
-          python -m pytest tests/
+        run: python -m pytest tests/
       - name: End to End Tests
         env:
           DUNE_USER: ${{ secrets.DUNE_USER }}

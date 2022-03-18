@@ -186,7 +186,7 @@ class DuneAnalytics:
         else:
             raise SystemExit(response)
 
-    def refresh_auth_token(self):
+    def refresh_auth_token(self) -> None:
         """Set authorization token for the user"""
         self.fetch_auth_token()
         self.session.headers.update({"authorization": f"Bearer {self.token}"})

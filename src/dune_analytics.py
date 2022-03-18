@@ -20,6 +20,10 @@ logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"
 
+RawDuneResponse = dict[str, dict[str, list[dict[str, dict[str, str]]]]]
+
+ParsedDuneResponse = list[dict[str, str]]
+
 
 class Network(Enum):
     """Enum for supported EVM networks"""
@@ -312,7 +316,7 @@ class DuneAnalytics:
             raise RuntimeError("Dune API Request failed with", response_json)
         return response_json
 
-    def execute_and_await_results(self, sleep_time: int) -> list[dict]:
+    def execute_and_await_results(self, sleep_time: int) -> ParsedDuneResponse:
         """
         Executes query by ID and awaits completion.
         Since queries take some time to complete we include a sleep parameter
@@ -336,7 +340,7 @@ class DuneAnalytics:
         network: Network,
         name: str,
         parameters: Optional[list[QueryParameter]] = None,
-    ) -> list[dict]:
+    ) -> ParsedDuneResponse:
         """
         Pushes new query and executes, awaiting query completion
         :param query_str: sql string to execute
@@ -369,6 +373,6 @@ class DuneAnalytics:
             return query_file.read()
 
     @staticmethod
-    def parse_response(data: dict) -> list[dict]:
+    def parse_response(data: RawDuneResponse) -> ParsedDuneResponse:
         """Parses user data and execution date from query result."""
         return [rec["data"] for rec in data["data"]["get_result_by_result_id"]]

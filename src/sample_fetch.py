@@ -1,4 +1,5 @@
 """Sample Fetch script from DuneAnalytics"""
+from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -13,6 +14,16 @@ class Record:
     integer: int
     decimal: float
     time: datetime
+
+    @classmethod
+    def from_dict(cls, obj: dict[str, str]) -> Record:
+        return cls(
+            string=obj["block_hash"],
+            integer=int(obj["number"]),
+            decimal=float(obj["tx_fees"]),
+            # Dune timestamps are UTC!
+            time=datetime.strptime(obj["time"], "%Y-%m-%dT%H:%M:%S+00:00"),
+        )
 
 
 def fetch_records(dune: DuneAnalytics) -> list[Record]:
@@ -29,15 +40,7 @@ def fetch_records(dune: DuneAnalytics) -> list[Record]:
             QueryParameter.text_type("TextParam", "aba"),
         ],
     )
-    return [
-        Record(
-            string=row["block_hash"],
-            integer=row["number"],
-            decimal=row["tx_fees"],
-            time=row["time"],
-        )
-        for row in results
-    ]
+    return [Record.from_dict(row) for row in results]
 
 
 if __name__ == "__main__":

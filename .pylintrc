@@ -1,2 +1,5 @@
 [MASTER]
-disable=fixme
+disable=fixme,logging-fstring-interpolation
+
+max-attributes=9
+max-args=6

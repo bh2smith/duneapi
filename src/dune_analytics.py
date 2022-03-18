@@ -5,6 +5,7 @@ at commit bdccd5ba543a8f3679e2c81e18cee846af47bc52
 """
 from __future__ import annotations
 
+import logging.config
 import os
 import time
 from datetime import datetime
@@ -12,6 +13,9 @@ from enum import Enum
 from typing import Optional, Any
 
 from requests import Session
+
+log = logging.getLogger(__name__)
+logging.config.fileConfig(fname='logging.conf', disable_existing_loggers=True)
 
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"
@@ -113,7 +117,14 @@ class DuneAnalytics:
     Acts as API client for dune.xyz. All requests to be made through this class.
     """
 
-    def __init__(self, username: str, password: str, query_id: int):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        query_id: int,
+        max_retries: int = 2,
+        ping_frequency: int = 5,
+    ):
         """
         Initialize the object
         :param username: username for dune.xyz
@@ -127,6 +138,8 @@ class DuneAnalytics:
         self.password = password
         self.query_id = int(query_id)
         self.session = Session()
+        self.max_retries = max_retries
+        self.ping_frequency = ping_frequency
         headers = {
             "origin": BASE_URL,
             "sec-ch-ua": "empty",
@@ -299,33 +312,6 @@ class DuneAnalytics:
             raise RuntimeError("Dune API Request failed with", response_json)
         return response_json
 
-    # pylint: disable=too-many-arguments
-    def _initiate_execute_await(
-        self,
-        query_str: str,
-        network: Network,
-        parameters: Optional[list[QueryParameter]] = None,
-        ping_frequency: int = 5,
-        max_retries: int = 2,
-    ) -> list[dict]:
-        """Pushes new query and executes, awaiting query completion"""
-        self.initiate_new_query(
-            query=query_str,
-            network=network,
-            name="Auto Generated Query",
-            parameters=parameters or [],
-        )
-        for _ in range(0, max_retries):
-            try:
-                return self.execute_and_await_results(ping_frequency)
-            except RuntimeError as err:
-                print(
-                    f"execution fetching failed with {err}.\n"
-                    f"re-establishing dune connection and trying again"
-                )
-                self.login_and_fetch_auth()
-        raise Exception(f"Maximum retries ({max_retries}) exceeded")
-
     def execute_and_await_results(self, sleep_time: int) -> list[dict]:
         """
         Executes query by ID and awaits completion.
@@ -341,7 +327,7 @@ class DuneAnalytics:
             result_id = self.query_result_id()
         data = self.query_result(result_id)
         data_set = self.parse_response(data)
-        print(f"got {len(data_set)} records from last query")
+        log.info(f"got {len(data_set)} records from last query")
         return data_set
 
     def fetch(
@@ -352,14 +338,29 @@ class DuneAnalytics:
         parameters: Optional[list[dict[str, str]]],
     ) -> list[dict]:
         """
+        Pushes new query and executes, awaiting query completion
         :param query_str: sql string to execute
         :param network: Network enum variant
         :param name: optional name of what is being fetched (for logging)
         :param parameters: optional parameters to be included in query
         :return: list of records as dictionaries
         """
-        print(f"Fetching {name} on {network}...")
-        return self._initiate_execute_await(query_str, network, parameters)
+        log.info(f"Fetching {name} on {network}...")
+        self.initiate_new_query(
+            query=query_str,
+            network=network,
+            name="Auto Generated Query",
+            parameters=parameters or [],
+        )
+        for _ in range(0, self.max_retries):
+            try:
+                return self.execute_and_await_results(self.ping_frequency)
+            except RuntimeError as err:
+                log.warning(
+                    f"fetch failed with {err}. Re-establishing connection and trying again"
+                )
+                self.login_and_fetch_auth()
+        raise Exception(f"Maximum retries ({self.max_retries}) exceeded")
 
     @staticmethod
     def open_query(filepath: str) -> str:

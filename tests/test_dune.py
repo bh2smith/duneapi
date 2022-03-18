@@ -22,7 +22,7 @@ class TestDuneAnalytics(unittest.TestCase):
         with self.assertRaises(Exception):
             self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query")
 
-        self.dune.max_retries = 2
+        self.dune.max_retries = 1
         self.assertEqual(
             self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query"),
             1,

@@ -30,9 +30,9 @@ class MetaData:
     # These are the types we would like to have but.json.loads makes them all strings.
     id: str
     job_id: str
-    error: Optional[str]
-    runtime: int
-    generated_at: datetime
+    error: str  # Should be Optional[str]
+    runtime: str  # should be int
+    generated_at: str  # should be datetime
     columns: list[str]
 
     def __init__(self, obj: str):
@@ -49,6 +49,7 @@ class MetaData:
         }
         """
         self.__dict__ = json.loads(obj)
+        print(type(self.runtime))
 
 
 class QueryResults:

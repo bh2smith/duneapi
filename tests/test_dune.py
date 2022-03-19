@@ -32,12 +32,13 @@ class TestDuneAnalytics(unittest.TestCase):
         with self.assertRaises(Exception):
             self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query")
 
-    def test_parse_response(self):
-        sample_response = {
-            "data": {"get_result_by_result_id": [{"data": {"col1": 1, "col2": 2}}]}
-        }
-        expected_result = [{"col1": 1, "col2": 2}]
-        self.assertEqual(self.dune.parse_response(sample_response), expected_result)
+    # TODO - test QueryResult constructor
+    # def test_parse_response(self):
+    #     sample_response = {
+    #         "data": {"get_result_by_result_id": [{"data": {"col1": 1, "col2": 2}}]}
+    #     }
+    #     expected_result = [{"col1": 1, "col2": 2}]
+    #     self.assertEqual(self.dune.parse_response(sample_response), expected_result)
 
 
 if __name__ == "__main__":

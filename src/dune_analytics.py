@@ -15,6 +15,8 @@ from typing import Optional, Any, Collection
 
 from requests import Session, Response
 
+from src.util import datetime_parser
+
 log = logging.getLogger(__name__)
 logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 
@@ -26,13 +28,16 @@ RawDuneResponse = dict[str, dict[str, list[dict[str, dict[str, str]]]]]
 DuneRecord = dict[str, str]
 
 
+# pylint: disable=too-few-public-methods
+# TODO - use namedtuple for MetaData and QueryResults
 class MetaData:
-    # These are the types we would like to have but.json.loads makes them all strings.
+    """The standard information returned from the Dune API as `query_results`"""
+
     id: str
     job_id: str
-    error: str  # Should be Optional[str]
-    runtime: str  # should be int
-    generated_at: str  # should be datetime
+    error: Optional[str]
+    runtime: int
+    generated_at: datetime
     columns: list[str]
 
     def __init__(self, obj: str):
@@ -48,11 +53,13 @@ class MetaData:
             '__typename': 'query_results'
         }
         """
-        self.__dict__ = json.loads(obj)
+        self.__dict__ = json.loads(obj, object_hook=datetime_parser)
         print(type(self.runtime))
 
 
 class QueryResults:
+    """Class containing the Data results of a Dune Select Query"""
+
     meta: MetaData
     data: list[DuneRecord]
 
@@ -281,7 +288,6 @@ class DuneAnalytics:
             # pylint: disable=line-too-long
             "query": "mutation UpsertQuery($session_id: Int!, $object: queries_insert_input!, $on_conflict: queries_on_conflict!, $favs_last_24h: Boolean! = false, $favs_last_7d: Boolean! = false, $favs_last_30d: Boolean! = false, $favs_all_time: Boolean! = true) {\n  insert_queries_one(object: $object, on_conflict: $on_conflict) {\n    ...Query\n    favorite_queries(where: {user_id: {_eq: $session_id}}, limit: 1) {\n      created_at\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment Query on queries {\n  ...BaseQuery\n  ...QueryVisualizations\n  ...QueryForked\n  ...QueryUsers\n  ...QueryFavorites\n  __typename\n}\n\nfragment BaseQuery on queries {\n  id\n  dataset_id\n  name\n  description\n  query\n  private_to_group_id\n  is_temp\n  is_archived\n  created_at\n  updated_at\n  schedule\n  tags\n  parameters\n  __typename\n}\n\nfragment QueryVisualizations on queries {\n  visualizations {\n    id\n    type\n    name\n    options\n    created_at\n    __typename\n  }\n  __typename\n}\n\nfragment QueryForked on queries {\n  forked_query {\n    id\n    name\n    user {\n      name\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment QueryUsers on queries {\n  user {\n    ...User\n    __typename\n  }\n  __typename\n}\n\nfragment User on users {\n  id\n  name\n  profile_image_url\n  __typename\n}\n\nfragment QueryFavorites on queries {\n  query_favorite_count_all @include(if: $favs_all_time) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_24h @include(if: $favs_last_24h) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_7d @include(if: $favs_last_7d) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_30d @include(if: $favs_last_30d) {\n    favorite_count\n    __typename\n  }\n  __typename\n}\n",
         }
-        # log.debug("Upsert Query") dict[str, dict[str, dict[str, Any]]]
         self.handle_dune_request(query_data)
 
     def execute_query(self) -> None:
@@ -293,7 +299,6 @@ class DuneAnalytics:
             "{\n  execute_query(query_id: $query_id, parameters: $parameters) "
             "{\n    job_id\n    __typename\n  }\n}\n",
         }
-        log.debug("Executing Query")
         response = self.post_dune_request(query_data)
         if response.status_code != 200:
             raise Exception(f"Failed Query execution with {response.status_code}")
@@ -310,7 +315,6 @@ class DuneAnalytics:
             "{\n  get_result(query_id: $query_id, parameters: $parameters) "
             "{\n    job_id\n    result_id\n    __typename\n  }\n}\n",
         }
-        # log.debug("Fetching Result ID") dict[str, dict[str, dict[str, Optional[str]]
         data = self.handle_dune_request(query_data)
         result_id = data.get("data").get("get_result").get("result_id")
         return str(result_id) if result_id else None
@@ -327,7 +331,6 @@ class DuneAnalytics:
             "\n  get_result_by_result_id(args: {want_result_id: $result_id}) "
             "{\n    data\n    __typename\n  }\n}\n",
         }
-        log.debug("Fetching Results")
         response = self.post_dune_request(query_data)
         # TODO - this error handling could happen in a dedicated location.
         if response.status_code != 200:

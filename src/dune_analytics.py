@@ -5,6 +5,7 @@ at commit bdccd5ba543a8f3679e2c81e18cee846af47bc52
 """
 from __future__ import annotations
 
+import json
 import logging.config
 import os
 import time
@@ -12,7 +13,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, Any, Collection
 
-from requests import Session
+from requests import Session, Response
 
 log = logging.getLogger(__name__)
 logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
@@ -22,7 +23,45 @@ GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"
 
 RawDuneResponse = dict[str, dict[str, list[dict[str, dict[str, str]]]]]
 
-ParsedDuneResponse = list[dict[str, str]]
+DuneRecord = dict[str, str]
+
+
+class MetaData:
+    # These are the types we would like to have but.json.loads makes them all strings.
+    id: str
+    job_id: str
+    error: Optional[str]
+    runtime: int
+    generated_at: datetime
+    columns: list[str]
+
+    def __init__(self, obj: str):
+        """
+        :param obj: input should have the following form
+        {
+            'id': '3158cc2c-5ed1-4779-b523-eeb9c3b34b21',
+            'job_id': '093e440d-66ce-4c00-81ec-2406f0403bc0',
+            'error': None,
+            'runtime': 0,
+            'generated_at': '2022-03-19T07:11:37.344998+00:00',
+            'columns': ['number', 'size', 'time', 'block_hash', 'tx_fees'],
+            '__typename': 'query_results'
+        }
+        """
+        self.__dict__ = json.loads(obj)
+
+
+class QueryResults:
+    meta: MetaData
+    data: list[DuneRecord]
+
+    def __init__(self, payload: dict[str, dict[str, list[dict[str, Any]]]]):
+        assert payload.keys() == {"data"}, "Expected payload dict to have data key"
+        data = payload["data"]
+        assert data.keys() == {"query_results", "get_result_by_result_id"}
+        assert len(data["query_results"]) == 1, "Unexpected query results"
+        self.meta = MetaData(json.dumps(data["query_results"][0]))
+        self.data = [rec["data"] for rec in data["get_result_by_result_id"]]
 
 
 class Network(Enum):
@@ -241,9 +280,10 @@ class DuneAnalytics:
             # pylint: disable=line-too-long
             "query": "mutation UpsertQuery($session_id: Int!, $object: queries_insert_input!, $on_conflict: queries_on_conflict!, $favs_last_24h: Boolean! = false, $favs_last_7d: Boolean! = false, $favs_last_30d: Boolean! = false, $favs_all_time: Boolean! = true) {\n  insert_queries_one(object: $object, on_conflict: $on_conflict) {\n    ...Query\n    favorite_queries(where: {user_id: {_eq: $session_id}}, limit: 1) {\n      created_at\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment Query on queries {\n  ...BaseQuery\n  ...QueryVisualizations\n  ...QueryForked\n  ...QueryUsers\n  ...QueryFavorites\n  __typename\n}\n\nfragment BaseQuery on queries {\n  id\n  dataset_id\n  name\n  description\n  query\n  private_to_group_id\n  is_temp\n  is_archived\n  created_at\n  updated_at\n  schedule\n  tags\n  parameters\n  __typename\n}\n\nfragment QueryVisualizations on queries {\n  visualizations {\n    id\n    type\n    name\n    options\n    created_at\n    __typename\n  }\n  __typename\n}\n\nfragment QueryForked on queries {\n  forked_query {\n    id\n    name\n    user {\n      name\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment QueryUsers on queries {\n  user {\n    ...User\n    __typename\n  }\n  __typename\n}\n\nfragment User on users {\n  id\n  name\n  profile_image_url\n  __typename\n}\n\nfragment QueryFavorites on queries {\n  query_favorite_count_all @include(if: $favs_all_time) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_24h @include(if: $favs_last_24h) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_7d @include(if: $favs_last_7d) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_30d @include(if: $favs_last_30d) {\n    favorite_count\n    __typename\n  }\n  __typename\n}\n",
         }
+        # log.debug("Upsert Query") dict[str, dict[str, dict[str, Any]]]
         self.handle_dune_request(query_data)
 
-    def execute_query(self):  # type: ignore
+    def execute_query(self) -> None:
         """Executes query at query_id"""
         query_data = {
             "operationName": "ExecuteQuery",
@@ -252,7 +292,10 @@ class DuneAnalytics:
             "{\n  execute_query(query_id: $query_id, parameters: $parameters) "
             "{\n    job_id\n    __typename\n  }\n}\n",
         }
-        return self.handle_dune_request(query_data)
+        log.debug("Executing Query")
+        response = self.post_dune_request(query_data)
+        if response.status_code != 200:
+            raise Exception(f"Failed Query execution with {response.status_code}")
 
     def query_result_id(self) -> Optional[str]:
         """
@@ -266,12 +309,12 @@ class DuneAnalytics:
             "{\n  get_result(query_id: $query_id, parameters: $parameters) "
             "{\n    job_id\n    result_id\n    __typename\n  }\n}\n",
         }
-
+        # log.debug("Fetching Result ID") dict[str, dict[str, dict[str, Optional[str]]
         data = self.handle_dune_request(query_data)
         result_id = data.get("data").get("get_result").get("result_id")
         return str(result_id) if result_id else None
 
-    def query_result(self, result_id: str):  # type: ignore
+    def query_result(self, result_id: str) -> list[DuneRecord]:
         """Fetch the result for a query by id"""
         query_data = {
             "operationName": "FindResultDataByResult",
@@ -283,8 +326,21 @@ class DuneAnalytics:
             "\n  get_result_by_result_id(args: {want_result_id: $result_id}) "
             "{\n    data\n    __typename\n  }\n}\n",
         }
+        log.debug("Fetching Results")
+        response = self.post_dune_request(query_data)
+        # TODO - this error handling could happen in a dedicated location.
+        if response.status_code != 200:
+            raise Exception("Bad Response. Status code", response.status_code)
+        response_json = response.json()
+        if "errors" in response_json:
+            raise RuntimeError("Request Error. Failed with", response_json)
 
-        return self.handle_dune_request(query_data)
+        return QueryResults(response.json()).data
+
+    def post_dune_request(self, query: dict[str, Collection[str]]) -> Response:
+        """Refresh Authorization Token and post query"""
+        self.refresh_auth_token()
+        return self.session.post(GRAPH_URL, json=query)
 
     def handle_dune_request(self, query: dict[str, Collection[str]]):  # type: ignore
         """
@@ -300,7 +356,7 @@ class DuneAnalytics:
             raise RuntimeError("Dune API Request failed with", response_json)
         return response_json
 
-    def execute_and_await_results(self, sleep_time: int) -> ParsedDuneResponse:
+    def execute_and_await_results(self, sleep_time: int) -> list[DuneRecord]:
         """
         Executes query by ID and awaits completion.
         Since queries take some time to complete we include a sleep parameter
@@ -313,8 +369,7 @@ class DuneAnalytics:
         while not result_id:
             time.sleep(sleep_time)
             result_id = self.query_result_id()
-        data = self.query_result(result_id)
-        data_set = self.parse_response(data)
+        data_set = self.query_result(result_id)
         log.info(f"got {len(data_set)} records from last query")
         return data_set
 
@@ -324,7 +379,7 @@ class DuneAnalytics:
         network: Network,
         name: str,
         parameters: Optional[list[QueryParameter]] = None,
-    ) -> ParsedDuneResponse:
+    ) -> list[DuneRecord]:
         """
         Pushes new query and executes, awaiting query completion
         :param query_str: sql string to execute
@@ -356,8 +411,3 @@ class DuneAnalytics:
         """Opens `filename` and returns as string"""
         with open(filepath, "r", encoding="utf-8") as query_file:
             return query_file.read()
-
-    @staticmethod
-    def parse_response(data: RawDuneResponse) -> ParsedDuneResponse:
-        """Parses user data and execution date from query result."""
-        return [rec["data"] for rec in data["data"]["get_result_by_result_id"]]

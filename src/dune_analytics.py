@@ -5,139 +5,21 @@ at commit bdccd5ba543a8f3679e2c81e18cee846af47bc52
 """
 from __future__ import annotations
 
-import json
 import logging.config
 import os
 import time
-from datetime import datetime
-from enum import Enum
-from typing import Optional, Any, Collection
+from typing import Optional, Collection
 
 from requests import Session, Response
+
+from src.dune_types import Network, QueryParameter, DuneRecord, QueryResults
+from src.operations import get_result_post, find_result_post, execute_query_post
 
 log = logging.getLogger(__name__)
 logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"
-
-RawDuneResponse = dict[str, dict[str, list[dict[str, dict[str, str]]]]]
-
-DuneRecord = dict[str, str]
-
-
-class MetaData:
-    # These are the types we would like to have but.json.loads makes them all strings.
-    id: str
-    job_id: str
-    error: str  # Should be Optional[str]
-    runtime: str  # should be int
-    generated_at: str  # should be datetime
-    columns: list[str]
-
-    def __init__(self, obj: str):
-        """
-        :param obj: input should have the following form
-        {
-            'id': '3158cc2c-5ed1-4779-b523-eeb9c3b34b21',
-            'job_id': '093e440d-66ce-4c00-81ec-2406f0403bc0',
-            'error': None,
-            'runtime': 0,
-            'generated_at': '2022-03-19T07:11:37.344998+00:00',
-            'columns': ['number', 'size', 'time', 'block_hash', 'tx_fees'],
-            '__typename': 'query_results'
-        }
-        """
-        self.__dict__ = json.loads(obj)
-        print(type(self.runtime))
-
-
-class QueryResults:
-    meta: MetaData
-    data: list[DuneRecord]
-
-    def __init__(self, payload: dict[str, dict[str, list[dict[str, Any]]]]):
-        assert payload.keys() == {"data"}, "Expected payload dict to have data key"
-        data = payload["data"]
-        assert data.keys() == {"query_results", "get_result_by_result_id"}
-        assert len(data["query_results"]) == 1, "Unexpected query results"
-        self.meta = MetaData(json.dumps(data["query_results"][0]))
-        self.data = [rec["data"] for rec in data["get_result_by_result_id"]]
-
-
-class Network(Enum):
-    """Enum for supported EVM networks"""
-
-    MAINNET = 4
-    GCHAIN = 6
-
-    def __str__(self) -> str:
-        match self:
-            case Network.MAINNET:
-                return "Ethereum mainnet"
-            case Network.GCHAIN:
-                return "Gnosis chain"
-        return super.__str__(self)
-
-
-class ParameterType(Enum):
-    """
-    Enum of the 4 distinct dune parameter types
-    """
-
-    TEXT = "text"
-    NUMBER = "number"
-    DATE = "datetime"
-
-
-class QueryParameter:
-    """Class whose instances are Dune Compatible Query Parameters"""
-
-    def __init__(
-        self,
-        name: str,
-        parameter_type: ParameterType,
-        value: Any,
-    ):
-        self.key: str = name
-        self.type: ParameterType = parameter_type
-        self.value = value
-
-    @classmethod
-    def text_type(cls, name: str, value: str) -> QueryParameter:
-        """Constructs a Query parameter of type text"""
-        return cls(name, ParameterType.TEXT, value)
-
-    @classmethod
-    def number_type(cls, name: str, value: int | float) -> QueryParameter:
-        """Constructs a Query parameter of type number"""
-        return cls(name, ParameterType.NUMBER, value)
-
-    @classmethod
-    def date_type(cls, name: str, value: datetime) -> QueryParameter:
-        """Constructs a Query parameter of type date"""
-        return cls(name, ParameterType.DATE, value)
-
-    def _value_str(self) -> str:
-        match self.type:
-            case (ParameterType.TEXT):
-                return str(self.value)
-            case (ParameterType.NUMBER):
-                return str(self.value)
-            case (ParameterType.DATE):
-                # This is the postgres string format of timestamptz
-                return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
-
-        raise TypeError(f"Type {self.type} not recognized!")
-
-    def to_dict(self) -> dict[str, str]:
-        """Converts QueryParameter into string json format accepted by Dune API"""
-        results = {
-            "key": self.key,
-            "type": self.type.value,
-            "value": self._value_str(),
-        }
-        return results
 
 
 class DuneAnalytics:
@@ -286,30 +168,16 @@ class DuneAnalytics:
 
     def execute_query(self) -> None:
         """Executes query at query_id"""
-        query_data = {
-            "operationName": "ExecuteQuery",
-            "variables": {"query_id": self.query_id, "parameters": []},
-            "query": "mutation ExecuteQuery($query_id: Int!, $parameters: [Parameter!]!)"
-            "{\n  execute_query(query_id: $query_id, parameters: $parameters) "
-            "{\n    job_id\n    __typename\n  }\n}\n",
-        }
+        query_data = execute_query_post(self.query_id)
         log.debug("Executing Query")
-        response = self.post_dune_request(query_data)
-        if response.status_code != 200:
-            raise Exception(f"Failed Query execution with {response.status_code}")
+        self.post_dune_request(query_data)
 
     def query_result_id(self) -> Optional[str]:
         """
         Fetch the query result id for a query
         :return: string representation of integer result id
         """
-        query_data = {
-            "operationName": "GetResult",
-            "variables": {"query_id": self.query_id},
-            "query": "query GetResult($query_id: Int!, $parameters: [Parameter!]) "
-            "{\n  get_result(query_id: $query_id, parameters: $parameters) "
-            "{\n    job_id\n    result_id\n    __typename\n  }\n}\n",
-        }
+        query_data = get_result_post(self.query_id)
         # log.debug("Fetching Result ID") dict[str, dict[str, dict[str, Optional[str]]
         data = self.handle_dune_request(query_data)
         result_id = data.get("data").get("get_result").get("result_id")
@@ -317,31 +185,20 @@ class DuneAnalytics:
 
     def query_result(self, result_id: str) -> list[DuneRecord]:
         """Fetch the result for a query by id"""
-        query_data = {
-            "operationName": "FindResultDataByResult",
-            "variables": {"result_id": result_id},
-            "query": "query FindResultDataByResult($result_id: uuid!) "
-            "{\n  query_results(where: {id: {_eq: $result_id}}) "
-            "{\n    id\n    job_id\n    error\n    runtime\n    "
-            "generated_at\n    columns\n    __typename\n  }"
-            "\n  get_result_by_result_id(args: {want_result_id: $result_id}) "
-            "{\n    data\n    __typename\n  }\n}\n",
-        }
-        log.debug("Fetching Results")
-        response = self.post_dune_request(query_data)
-        # TODO - this error handling could happen in a dedicated location.
-        if response.status_code != 200:
-            raise Exception("Bad Response. Status code", response.status_code)
-        response_json = response.json()
+        query_data = find_result_post(result_id)
+        response_json = self.post_dune_request(query_data).json()
         if "errors" in response_json:
             raise RuntimeError("Request Error. Failed with", response_json)
 
-        return QueryResults(response.json()).data
+        return QueryResults(response_json).data
 
     def post_dune_request(self, query: dict[str, Collection[str]]) -> Response:
         """Refresh Authorization Token and post query"""
         self.refresh_auth_token()
-        return self.session.post(GRAPH_URL, json=query)
+        response = self.session.post(GRAPH_URL, json=query)
+        if response.status_code != 200:
+            raise SystemExit("Dune post failed with", response)
+        return response
 
     def handle_dune_request(self, query: dict[str, Collection[str]]):  # type: ignore
         """
@@ -399,9 +256,9 @@ class DuneAnalytics:
         for _ in range(0, self.max_retries):
             try:
                 return self.execute_and_await_results(self.ping_frequency)
-            except RuntimeError as err:
+            except RuntimeError as e:
                 log.warning(
-                    f"fetch failed with {err}. Re-establishing connection and trying again"
+                    f"failed with {e}.\nRe-establishing connection and trying again"
                 )
                 self.login()
                 self.refresh_auth_token()

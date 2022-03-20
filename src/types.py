@@ -58,14 +58,21 @@ class MetaData:
 class QueryResults:
     """Class containing the Data results of a Dune Select Query"""
 
-    meta: MetaData
+    meta: Optional[MetaData]
     data: list[DuneRecord]
 
     def __init__(self, data: ListInnerResponse):
-        assert data.keys() == {"query_results", "get_result_by_result_id"}
-        assert len(data["query_results"]) == 1, "Unexpected query results"
-
+        assert data.keys() == {
+            "query_results",
+            "get_result_by_result_id",
+        }, f"invalid keys {data.keys()}"
+        assert (
+            len(data["query_results"]) == 1
+        ), f"Unexpected query_results {data['query_results']}"
+        # Could wrap meta conversion into a try-catch, since we don't really need it.
+        # But, I can't think of a broad enough exception that won't trip up the liner.
         self.meta = MetaData(json.dumps(data["query_results"][0]))
+
         self.data = [rec["data"] for rec in data["get_result_by_result_id"]]
 
 

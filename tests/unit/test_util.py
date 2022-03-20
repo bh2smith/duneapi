@@ -25,7 +25,7 @@ class TestUtilities(unittest.TestCase):
 
     def test_open_query(self):
         query = "select 10 - '{{IntParameter}}' as value"
-        self.assertEqual(query, open_query("./tests/e2e/queries/test_query.sql"))
+        self.assertEqual(query, open_query("./tests/queries/test_query.sql"))
 
 
 if __name__ == "__main__":

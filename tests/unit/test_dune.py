@@ -5,12 +5,6 @@ from src.dune_analytics import DuneAnalytics
 from src.types import Network
 
 
-class TestNetworkEnum(unittest.TestCase):
-    def test_string_rep(self):
-        self.assertEqual(str(Network.MAINNET), "Ethereum mainnet")
-        self.assertEqual(str(Network.GCHAIN), "Gnosis chain")
-
-
 class TestDuneAnalytics(unittest.TestCase):
     def setUp(self) -> None:
         self.dune = DuneAnalytics("user", "password", 0)

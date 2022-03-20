@@ -3,9 +3,7 @@ import logging.config
 from dataclasses import dataclass
 from typing import Collection, Any
 
-from requests import Response
-
-from src.types import DuneSQLQuery, ListInnerResponse, DictInnerResponse
+from src.types import DuneSQLQuery
 
 log = logging.getLogger(__name__)
 logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
@@ -13,66 +11,6 @@ logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 PostData = dict[str, Collection[str]]
 # key_map = {"outer1": {"inner11", "inner12}, "outer2": {"inner21"}}
 KeyMap = dict[str, set[str]]
-
-
-def pre_validate_response(response: Response, key_map: KeyMap) -> dict[str, Any]:
-    """
-    Validates the outermost (generic) part of Dune response data.
-    Expects "data" to be a key in the response json and that the
-    first level inner keys agree with what the caller expects.
-    """
-    if response.status_code != 200:
-        raise SystemExit("Dune post failed with", response)
-
-    response_json = response.json()
-    if "errors" in response_json:
-        raise RuntimeError(f"Dune API Request failed with {response_json}")
-    if "data" not in response_json.keys():
-        raise ValueError(f"response json {response_json} missing 'data' key")
-
-    response_data: dict[str, Any] = response_json["data"]
-
-    assert (
-        response_data.keys() == key_map.keys()
-    ), f"got={response_data.keys()}, expected={key_map.keys()}"
-
-    return response_data
-
-
-def validate_and_parse_dict_response(
-    response: Response, key_map: KeyMap
-) -> DictInnerResponse:
-    """
-    Validates responses of dict inner type, and
-    returns partially parsed response data
-    """
-    response_data = pre_validate_response(response, key_map)
-    for key, val in key_map.items():
-        assert isinstance(
-            response_data[key], dict
-        ), f"Invalid response type {type(response_data[key])}"
-        next_level = response_data[key].keys()
-        assert next_level == val, f"Fail {next_level} != {val}"
-
-    return response_data
-
-
-def validate_and_parse_list_response(
-    response: Response, key_map: KeyMap
-) -> ListInnerResponse:
-    """
-    Validates responses with list inner type, and
-    returns partially parsed response data
-    """
-    response_data = pre_validate_response(response, key_map)
-    for key, val in key_map.items():
-        assert isinstance(
-            response_data[key], list
-        ), f"Invalid response type {type(response_data[key])}"
-        next_level = response_data[key][0].keys()
-        assert next_level == val, f"Fail {next_level} != {val}"
-
-    return response_data
 
 
 @dataclass

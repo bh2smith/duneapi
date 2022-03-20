@@ -16,15 +16,15 @@ class TestDuneAnalytics(unittest.TestCase):
         essentially all the methods of the API
         """
         dune = DuneAnalytics.new_from_environment()
-
-        with self.assertRaises(Exception):
-            res = dune.fetch(
-                query_str=open_query("./e2e/test_query.sql"),
-                network=Network.MAINNET,
-                parameters=[QueryParameter.number_type("IntParameter", 1)],
-            )
-            self.assertEqual(len(res), 1)
-            self.assertEqual(res[0]["value"], 9)
+        five, one = 5, 1
+        res = dune.fetch(
+            query_str=f"select {five} - '{{IntParameter}}' as value",
+            network=Network.MAINNET,
+            parameters=[QueryParameter.number_type("IntParameter", one)],
+            name="Test Fetch"
+        )
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["value"], five - one)
 
 
 if __name__ == "__main__":

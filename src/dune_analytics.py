@@ -12,15 +12,15 @@ from typing import Optional
 
 from requests import Session, Response
 
-from src.operations import (
+from src.request import (
     get_result_post,
     find_result_post,
     execute_query_post,
     initiate_query_post,
     Post,
-    validate_and_parse_dict_response,
-    validate_and_parse_list_response,
 )
+from src.response import validate_and_parse_dict_response, \
+    validate_and_parse_list_response
 from src.types import (
     Network,
     QueryParameter,

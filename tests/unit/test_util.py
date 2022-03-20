@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from src.util import datetime_parser
+from src.util import datetime_parser, open_query
 
 
 class TestUtilities(unittest.TestCase):
@@ -22,6 +22,10 @@ class TestUtilities(unittest.TestCase):
                 "invalid_date": invalid_date_str,
             },
         )
+
+    def test_open_query(self):
+        query = "select 10 - '{{IntParameter}}' as value"
+        self.assertEqual(query, open_query("./tests/e2e/queries/test_query.sql"))
 
 
 if __name__ == "__main__":

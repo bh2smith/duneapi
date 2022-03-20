@@ -12,8 +12,13 @@ from typing import Optional, Collection
 
 from requests import Session, Response
 
-from src.dune_types import Network, QueryParameter, DuneRecord, QueryResults
-from src.operations import get_result_post, find_result_post, execute_query_post
+from src.types import Network, QueryParameter, DuneRecord, QueryResults, DuneSQLQuery
+from src.operations import (
+    get_result_post,
+    find_result_post,
+    execute_query_post,
+    initiate_query_post,
+)
 
 log = logging.getLogger(__name__)
 logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
@@ -113,57 +118,9 @@ class DuneAnalytics:
         self.fetch_auth_token()
         self.session.headers.update({"authorization": f"Bearer {self.token}"})
 
-    def initiate_new_query(
-        self, query: str, name: str, network: Network, parameters: list[QueryParameter]
-    ) -> None:
+    def initiate_new_query(self, query: DuneSQLQuery) -> None:
         """Initiates a new query"""
-        query_data = {
-            "operationName": "UpsertQuery",
-            "variables": {
-                "favs_last_24h": False,
-                "favs_last_7d": False,
-                "favs_last_30d": False,
-                "favs_all_time": True,
-                "object": {
-                    "id": self.query_id,
-                    "schedule": None,
-                    "dataset_id": network.value,
-                    "name": name,
-                    "query": query,
-                    "user_id": 84,
-                    "description": "",
-                    "is_archived": False,
-                    "is_temp": False,
-                    "tags": [],
-                    "parameters": [p.to_dict() for p in parameters],
-                    "visualizations": {
-                        "data": [],
-                        "on_conflict": {
-                            "constraint": "visualizations_pkey",
-                            "update_columns": ["name", "options"],
-                        },
-                    },
-                },
-                "on_conflict": {
-                    "constraint": "queries_pkey",
-                    "update_columns": [
-                        "dataset_id",
-                        "name",
-                        "description",
-                        "query",
-                        "schedule",
-                        "is_archived",
-                        "is_temp",
-                        "tags",
-                        "parameters",
-                    ],
-                },
-                "session_id": 84,
-            },
-            # pylint: disable=line-too-long
-            "query": "mutation UpsertQuery($session_id: Int!, $object: queries_insert_input!, $on_conflict: queries_on_conflict!, $favs_last_24h: Boolean! = false, $favs_last_7d: Boolean! = false, $favs_last_30d: Boolean! = false, $favs_all_time: Boolean! = true) {\n  insert_queries_one(object: $object, on_conflict: $on_conflict) {\n    ...Query\n    favorite_queries(where: {user_id: {_eq: $session_id}}, limit: 1) {\n      created_at\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment Query on queries {\n  ...BaseQuery\n  ...QueryVisualizations\n  ...QueryForked\n  ...QueryUsers\n  ...QueryFavorites\n  __typename\n}\n\nfragment BaseQuery on queries {\n  id\n  dataset_id\n  name\n  description\n  query\n  private_to_group_id\n  is_temp\n  is_archived\n  created_at\n  updated_at\n  schedule\n  tags\n  parameters\n  __typename\n}\n\nfragment QueryVisualizations on queries {\n  visualizations {\n    id\n    type\n    name\n    options\n    created_at\n    __typename\n  }\n  __typename\n}\n\nfragment QueryForked on queries {\n  forked_query {\n    id\n    name\n    user {\n      name\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment QueryUsers on queries {\n  user {\n    ...User\n    __typename\n  }\n  __typename\n}\n\nfragment User on users {\n  id\n  name\n  profile_image_url\n  __typename\n}\n\nfragment QueryFavorites on queries {\n  query_favorite_count_all @include(if: $favs_all_time) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_24h @include(if: $favs_last_24h) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_7d @include(if: $favs_last_7d) {\n    favorite_count\n    __typename\n  }\n  query_favorite_count_last_30d @include(if: $favs_last_30d) {\n    favorite_count\n    __typename\n  }\n  __typename\n}\n",
-        }
-        # log.debug("Upsert Query") dict[str, dict[str, dict[str, Any]]]
+        query_data = initiate_query_post(query)
         self.handle_dune_request(query_data)
 
     def execute_query(self) -> None:
@@ -248,17 +205,20 @@ class DuneAnalytics:
         """
         log.info(f"Fetching {name} on {network}...")
         self.initiate_new_query(
-            query=query_str,
-            network=network,
-            name="Auto Generated Query",
-            parameters=parameters or [],
+            DuneSQLQuery(
+                query_id=self.query_id,
+                raw_sql=query_str,
+                network=network,
+                name="Auto Generated Query",
+                parameters=parameters or [],
+            )
         )
         for _ in range(0, self.max_retries):
             try:
                 return self.execute_and_await_results(self.ping_frequency)
-            except RuntimeError as e:
+            except RuntimeError as err:
                 log.warning(
-                    f"failed with {e}.\nRe-establishing connection and trying again"
+                    f"failed with {err}. Re-establishing connection and trying again"
                 )
                 self.login()
                 self.refresh_auth_token()

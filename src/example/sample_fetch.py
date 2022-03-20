@@ -30,7 +30,7 @@ class Record:
 def fetch_records(dune: DuneAnalytics) -> list[Record]:
     """Initiates and executes Dune query, returning results as Python Objects"""
     results = dune.fetch(
-        query_str=dune.open_query("./src/sample_query.sql"),
+        query_str=dune.open_query("./src/example/sample_query.sql"),
         name="Sample Query",
         network=Network.MAINNET,
         parameters=[

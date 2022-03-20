@@ -1,25 +1,32 @@
 from __future__ import annotations
+
 import json
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Any
+
+from src.util import datetime_parser
 
 RawDuneResponse = dict[str, dict[str, list[dict[str, dict[str, str]]]]]
 
 DuneRecord = dict[str, str]
 
 
-def datetime_parser(dct):
-    for k, v in dct.items():
-        if isinstance(v, str):
-            try:
-                dct[k] = datetime.strptime(v, "%Y-%m-%dT%H:%M:%S+00:00")
-            except ValueError:
-                pass
-    return dct
+@dataclass
+class DuneSQLQuery:
+    query_id: int
+    name: str
+    raw_sql: str
+    network: Network
+    parameters: list[QueryParameter]
 
 
+# pylint: disable=too-few-public-methods
+# TODO - use namedtuple for MetaData and QueryResults
 class MetaData:
+    """The standard information returned from the Dune API as `query_results`"""
+
     id: str
     job_id: str
     error: Optional[str]
@@ -44,6 +51,8 @@ class MetaData:
 
 
 class QueryResults:
+    """Class containing the Data results of a Dune Select Query"""
+
     meta: MetaData
     data: list[DuneRecord]
 

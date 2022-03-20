@@ -1,5 +1,7 @@
 from typing import Collection
 
+from src.types import DuneSQLQuery
+
 PostData = dict[str, Collection[str]]
 
 
@@ -32,23 +34,23 @@ def execute_query_post(query_id: int) -> PostData:
         "variables": {"query_id": query_id, "parameters": []},
         "query": "mutation ExecuteQuery($query_id: Int!, $parameters: [Parameter!]!)"
         "{\n  execute_query(query_id: $query_id, parameters: $parameters) "
-        "{\n    job_id\n    __typename\n  }\n}\n",
+        "{\n    job_id\n    __typename  }\n}\n",
     }
 
 
-def initiate_query_post() -> PostData:
+def initiate_query_post(query: DuneSQLQuery) -> PostData:
     object_data = {
-        "id": self.query_id,
+        "id": query.query_id,
         "schedule": None,
-        "dataset_id": network.value,
-        "name": name,
-        "query": query,
+        "dataset_id": query.network.value,
+        "name": query.name,
+        "query": query.raw_sql,
         "user_id": 84,
         "description": "",
         "is_archived": False,
         "is_temp": False,
         "tags": [],
-        "parameters": [p.to_dict() for p in parameters],
+        "parameters": [p.to_dict() for p in query.parameters],
         "visualizations": {
             "data": [],
             "on_conflict": {

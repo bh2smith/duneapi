@@ -17,14 +17,19 @@ class TestDuneAnalytics(unittest.TestCase):
         """
         dune = DuneAnalytics.new_from_environment()
         five, one = 5, 1
+        parameter_name = "IntParameter"
+        column_name = "value"
         res = dune.fetch(
-            query_str=f"select {five} - '{{IntParameter}}' as value",
+            # Note that consecutive double brace brackets in formatted strings
+            # become single brace brackets, so this query is
+            # select 5 - '{{IntParameter}}' as value
+            query_str=f"select {five} - '{{{{{parameter_name}}}}}' as {column_name}",
             network=Network.MAINNET,
-            parameters=[QueryParameter.number_type("IntParameter", one)],
+            parameters=[QueryParameter.number_type(parameter_name, one)],
             name="Test Fetch",
         )
         self.assertEqual(len(res), 1)
-        self.assertEqual(res[0]["value"], five - one)
+        self.assertEqual(res[0][column_name], five - one)
 
 
 if __name__ == "__main__":

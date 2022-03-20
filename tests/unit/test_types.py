@@ -66,7 +66,7 @@ class TestQueryParameter(unittest.TestCase):
         )
         self.assertEqual(
             date_type.to_dict(),
-            {"key": "Date", "type": "date", "value": "2022-03-10 00:00:00"},
+            {"key": "Date", "type": "datetime", "value": "2022-03-10 00:00:00"},
         )
 
 

@@ -129,7 +129,7 @@ class DuneAnalytics:
         self.fetch_auth_token()
         self.session.headers.update({"authorization": f"Bearer {self.token}"})
 
-    def initiate_new_query(self, query: DuneSQLQuery) -> None:
+    def initiate_query(self, query: DuneSQLQuery) -> None:
         """
         Initiates a new query.
         If no exception is raised, post was success!
@@ -206,7 +206,7 @@ class DuneAnalytics:
         :return: list of records as dictionaries
         """
         log.info(f"Fetching {name} on {network}...")
-        self.initiate_new_query(
+        self.initiate_query(
             DuneSQLQuery(
                 query_id=self.query_id,
                 raw_sql=query_str,

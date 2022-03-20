@@ -11,7 +11,7 @@ class TestDuneAnalytics(unittest.TestCase):
 
     def test_retry(self):
         self.dune.execute_and_await_results = MagicMock(return_value=1)
-        self.dune.initiate_new_query = MagicMock(return_value=None)
+        self.dune.initiate_query = MagicMock(return_value=None)
         self.dune.open_query = MagicMock(return_value="")
         self.dune.max_retries = 0
         with self.assertRaises(Exception):

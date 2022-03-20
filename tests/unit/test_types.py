@@ -1,14 +1,14 @@
+import datetime
 import json
 import unittest
 
-from src.types import Network, MetaData, QueryResults
+from src.types import Network, MetaData, QueryResults, QueryParameter
 
 
 class TestNetworkEnum(unittest.TestCase):
     def test_string_rep(self):
         self.assertEqual(str(Network.MAINNET), "Ethereum mainnet")
         self.assertEqual(str(Network.GCHAIN), "Gnosis chain")
-
 
 class TestQueryResults(unittest.TestCase):
     def setUp(self) -> None:
@@ -49,6 +49,17 @@ class TestQueryResults(unittest.TestCase):
             str(err.exception),
             f"Unexpected query_results {invalid_query_results['query_results']}",
         )
+
+class TestQueryParameter(unittest.TestCase):
+
+    def test_constructor(self):
+        number_type = QueryParameter.number_type("Number", 1)
+        text_type = QueryParameter.text_type("Text", "hello")
+        date_type = QueryParameter.date_type("Date", datetime.datetime(2022, 3, 10))
+
+        self.assertEqual(number_type.to_dict(), {})
+        self.assertEqual(text_type.to_dict(), {})
+        self.assertEqual(date_type.to_dict(), {})
 
 
 if __name__ == "__main__":

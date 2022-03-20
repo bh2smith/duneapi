@@ -38,7 +38,7 @@ def fetch_records(dune: DuneAnalytics) -> list[Record]:
         parameters=[
             QueryParameter.number_type("IntParam", 10),
             QueryParameter.date_type(
-                "DateParam", datetime.strptime("2022-03-10", "%Y-%m-%d")
+                "DateParam", datetime(2022, 3, 10, 12, 30, 30)
             ),
             QueryParameter.text_type("TextParam", "aba"),
         ],

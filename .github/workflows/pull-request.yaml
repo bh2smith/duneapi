@@ -19,12 +19,12 @@ jobs:
       - name: Type Check
         run: mypy src --strict
       - name: Unit Tests
-        run: python -m pytest tests/
+        run: python -m pytest tests/unit
       - name: End to End Tests
         env:
           DUNE_USER: ${{ secrets.DUNE_USER }}
           DUNE_PASSWORD: ${{ secrets.DUNE_PASSWORD }}
           DUNE_QUERY_ID: ${{ secrets.DUNE_QUERY_ID }}
         run:
-          python -m pytest e2e/
+          python -m pytest tests/e2e
 

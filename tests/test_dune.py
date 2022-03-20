@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, Mock
 
-from src.dune_analytics import DuneAnalytics, Network
+from src.dune_analytics import DuneAnalytics
+from src.types import Network
 
 
 class TestNetworkEnum(unittest.TestCase):

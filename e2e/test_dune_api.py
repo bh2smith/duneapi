@@ -1,6 +1,7 @@
 import unittest
 
 from src.dune_analytics import DuneAnalytics, Network, QueryParameter
+from src.util import open_query
 
 
 class TestDuneAnalytics(unittest.TestCase):
@@ -18,7 +19,7 @@ class TestDuneAnalytics(unittest.TestCase):
 
         with self.assertRaises(Exception):
             res = dune.fetch(
-                query_filepath="./e2e/test_query.sql",
+                query_str=open_query("./e2e/test_query.sql"),
                 network=Network.MAINNET,
                 parameters=[QueryParameter.number_type("IntParameter", 1)],
             )

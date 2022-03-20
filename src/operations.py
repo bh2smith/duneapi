@@ -85,10 +85,6 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
     return {
         "operationName": "UpsertQuery",
         "variables": {
-            "favs_last_24h": False,
-            "favs_last_7d": False,
-            "favs_last_30d": False,
-            "favs_all_time": True,
             "object": object_data,
             "on_conflict": {
                 "constraint": "queries_pkey",

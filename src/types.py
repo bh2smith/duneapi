@@ -1,3 +1,4 @@
+"""A collection of types associated with Dune Analytics API"""
 from __future__ import annotations
 
 import json
@@ -15,6 +16,7 @@ DuneRecord = dict[str, str]
 
 @dataclass
 class DuneSQLQuery:
+    """Contains all the relevant data necessary to initiate a Dune Query"""
     query_id: int
     name: str
     raw_sql: str

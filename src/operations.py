@@ -7,6 +7,7 @@ PostData = dict[str, Collection[str]]
 
 
 def find_result_post(result_id) -> PostData:
+    """Returns json data to make a post of type FindResultDataByResult"""
     query = """
     query FindResultDataByResult($result_id: uuid!) {
       query_results(where: { id: { _eq: $result_id } }) {
@@ -16,11 +17,9 @@ def find_result_post(result_id) -> PostData:
         runtime
         generated_at
         columns
-        __typename
       }
       get_result_by_result_id(args: { want_result_id: $result_id }) {
         data
-        __typename
       }
     }
     """
@@ -37,7 +36,6 @@ def get_result_post(query_id: int) -> PostData:
       get_result(query_id: $query_id, parameters: $parameters) {
         job_id
         result_id
-        __typename
       }
     }
     """
@@ -53,7 +51,6 @@ def execute_query_post(query_id: int) -> PostData:
     mutation ExecuteQuery($query_id: Int!, $parameters: [Parameter!]!) {
       execute_query(query_id: $query_id, parameters: $parameters) {
         job_id
-        __typename
       }
     }
     """
@@ -107,7 +104,7 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
                     "parameters",
                 ],
             },
-            "session_id": 84,
+            "session_id": 0,  # This value must be an int, but it doesn't matter what
         },
         "query": """
             mutation UpsertQuery(
@@ -123,9 +120,7 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
                 ...Query
                 favorite_queries(where: { user_id: { _eq: $session_id } }, limit: 1) {
                   created_at
-                  __typename
                 }
-                __typename
               }
             }
             fragment Query on queries {
@@ -134,7 +129,6 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
               ...QueryForked
               ...QueryUsers
               ...QueryFavorites
-              __typename
             }
             fragment BaseQuery on queries {
               id
@@ -150,7 +144,6 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
               schedule
               tags
               parameters
-              __typename
             }
             fragment QueryVisualizations on queries {
               visualizations {
@@ -159,9 +152,7 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
                 name
                 options
                 created_at
-                __typename
               }
-              __typename
             }
             fragment QueryForked on queries {
               forked_query {
@@ -169,43 +160,32 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
                 name
                 user {
                   name
-                  __typename
                 }
-                __typename
               }
-              __typename
             }
             fragment QueryUsers on queries {
               user {
                 ...User
-                __typename
               }
-              __typename
             }
             fragment User on users {
               id
               name
               profile_image_url
-              __typename
             }
             fragment QueryFavorites on queries {
               query_favorite_count_all @include(if: $favs_all_time) {
                 favorite_count
-                __typename
               }
               query_favorite_count_last_24h @include(if: $favs_last_24h) {
                 favorite_count
-                __typename
               }
               query_favorite_count_last_7d @include(if: $favs_last_7d) {
                 favorite_count
-                __typename
               }
               query_favorite_count_last_30d @include(if: $favs_last_30d) {
                 favorite_count
-                __typename
               }
-              __typename
             }
             """,
     }

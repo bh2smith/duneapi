@@ -10,6 +10,7 @@ class TestNetworkEnum(unittest.TestCase):
         self.assertEqual(str(Network.MAINNET), "Ethereum mainnet")
         self.assertEqual(str(Network.GCHAIN), "Gnosis chain")
 
+
 class TestQueryResults(unittest.TestCase):
     def setUp(self) -> None:
         self.metadata_content = {
@@ -50,16 +51,23 @@ class TestQueryResults(unittest.TestCase):
             f"Unexpected query_results {invalid_query_results['query_results']}",
         )
 
-class TestQueryParameter(unittest.TestCase):
 
-    def test_constructor(self):
+class TestQueryParameter(unittest.TestCase):
+    def test_constructors_and_to_dict(self):
         number_type = QueryParameter.number_type("Number", 1)
         text_type = QueryParameter.text_type("Text", "hello")
         date_type = QueryParameter.date_type("Date", datetime.datetime(2022, 3, 10))
 
-        self.assertEqual(number_type.to_dict(), {})
-        self.assertEqual(text_type.to_dict(), {})
-        self.assertEqual(date_type.to_dict(), {})
+        self.assertEqual(
+            number_type.to_dict(), {"key": "Number", "type": "number", "value": "1"}
+        )
+        self.assertEqual(
+            text_type.to_dict(), {"key": "Text", "type": "text", "value": "hello"}
+        )
+        self.assertEqual(
+            date_type.to_dict(),
+            {"key": "Date", "type": "date", "value": "2022-03-10 00:00:00"},
+        )
 
 
 if __name__ == "__main__":

@@ -37,9 +37,7 @@ def fetch_records(dune: DuneAnalytics) -> list[Record]:
         network=Network.MAINNET,
         parameters=[
             QueryParameter.number_type("IntParam", 10),
-            QueryParameter.date_type(
-                "DateParam", datetime(2022, 3, 10, 12, 30, 30)
-            ),
+            QueryParameter.date_type("DateParam", datetime(2022, 3, 10, 12, 30, 30)),
             QueryParameter.text_type("TextParam", "aba"),
         ],
     )

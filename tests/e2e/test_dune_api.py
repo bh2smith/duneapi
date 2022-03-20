@@ -21,7 +21,7 @@ class TestDuneAnalytics(unittest.TestCase):
             query_str=f"select {five} - '{{IntParameter}}' as value",
             network=Network.MAINNET,
             parameters=[QueryParameter.number_type("IntParameter", one)],
-            name="Test Fetch"
+            name="Test Fetch",
         )
         self.assertEqual(len(res), 1)
         self.assertEqual(res[0]["value"], five - one)

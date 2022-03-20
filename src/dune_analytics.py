@@ -19,8 +19,10 @@ from src.request import (
     initiate_query_post,
     Post,
 )
-from src.response import validate_and_parse_dict_response, \
-    validate_and_parse_list_response
+from src.response import (
+    validate_and_parse_dict_response,
+    validate_and_parse_list_response,
+)
 from src.types import (
     Network,
     QueryParameter,

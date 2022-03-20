@@ -8,16 +8,25 @@ from __future__ import annotations
 import logging.config
 import os
 import time
-from typing import Optional, Collection
+from typing import Optional
 
 from requests import Session, Response
 
-from src.types import Network, QueryParameter, DuneRecord, QueryResults, DuneSQLQuery
 from src.operations import (
     get_result_post,
     find_result_post,
     execute_query_post,
     initiate_query_post,
+    Post,
+    validate_and_parse_dict_response,
+    validate_and_parse_list_response,
+)
+from src.types import (
+    Network,
+    QueryParameter,
+    DuneRecord,
+    QueryResults,
+    DuneSQLQuery,
 )
 
 log = logging.getLogger(__name__)
@@ -119,72 +128,63 @@ class DuneAnalytics:
         self.session.headers.update({"authorization": f"Bearer {self.token}"})
 
     def initiate_new_query(self, query: DuneSQLQuery) -> None:
-        """Initiates a new query"""
-        query_data = initiate_query_post(query)
-        self.handle_dune_request(query_data)
+        """
+        Initiates a new query.
+        If no exception is raised, post was success!
+        """
+        post_data = initiate_query_post(query)
+        response = self.post_dune_request(post_data)
+        validate_and_parse_dict_response(response, post_data.key_map)
 
     def execute_query(self) -> None:
         """Executes query at query_id"""
-        query_data = execute_query_post(self.query_id)
-        log.debug("Executing Query")
-        self.post_dune_request(query_data)
+        post_data = execute_query_post(self.query_id)
+        response = self.post_dune_request(post_data)
+        validate_and_parse_dict_response(response, post_data.key_map)
 
     def query_result_id(self) -> Optional[str]:
         """
         Fetch the query result id for a query
         :return: string representation of integer result id
         """
-        query_data = get_result_post(self.query_id)
-        # log.debug("Fetching Result ID") dict[str, dict[str, dict[str, Optional[str]]
-        data = self.handle_dune_request(query_data)
-        result_id = data.get("data").get("get_result").get("result_id")
-        return str(result_id) if result_id else None
+        post_data = get_result_post(self.query_id)
+        response = self.post_dune_request(post_data)
+        response_data = validate_and_parse_dict_response(response, post_data.key_map)
 
-    def query_result(self, result_id: str) -> list[DuneRecord]:
+        return response_data["get_result"].get("result_id", None)
+
+    def get_results(self) -> list[DuneRecord]:
         """Fetch the result for a query by id"""
-        query_data = find_result_post(result_id)
-        response_json = self.post_dune_request(query_data).json()
-        if "errors" in response_json:
-            raise RuntimeError("Request Error. Failed with", response_json)
+        result_id = self.query_result_id()
+        while not result_id:
+            time.sleep(self.ping_frequency)
+            log.debug("Awaiting results... ")
+            result_id = self.query_result_id()
+        post_data = find_result_post(result_id)
+        response = self.post_dune_request(post_data)
+        response_data = validate_and_parse_list_response(response, post_data.key_map)
+        return QueryResults(response_data).data
 
-        return QueryResults(response_json).data
-
-    def post_dune_request(self, query: dict[str, Collection[str]]) -> Response:
-        """Refresh Authorization Token and post query"""
-        self.refresh_auth_token()
-        response = self.session.post(GRAPH_URL, json=query)
-        if response.status_code != 200:
-            raise SystemExit("Dune post failed with", response)
-        return response
-
-    def handle_dune_request(self, query: dict[str, Collection[str]]):  # type: ignore
+    def post_dune_request(self, post: Post) -> Response:
         """
+        Refresh Authorization Token and posts query.
         Parses response for errors by key and raises runtime error if they exist.
-        Successful responses will be printed to std-out and response json returned
-        :param query: JSON content for request POST
+        Only successful responses are returned
+        :param post: JSON content and validation parameters for request
         :return: response in json format
         """
         self.refresh_auth_token()
-        response = self.session.post(GRAPH_URL, json=query)
-        response_json = response.json()
-        if "errors" in response_json:
-            raise RuntimeError("Dune API Request failed with", response_json)
-        return response_json
+        response = self.session.post(GRAPH_URL, json=post.data)
 
-    def execute_and_await_results(self, sleep_time: int) -> list[DuneRecord]:
+        return response
+
+    def execute_and_await_results(self) -> list[DuneRecord]:
         """
         Executes query by ID and awaits completion.
-        Since queries take some time to complete we include a sleep parameter
-        since there is no purpose in constantly pinging for results
-        :param sleep_time: time to sleep between checking for results
         :return: parsed list of dict records returned from query
         """
         self.execute_query()
-        result_id = self.query_result_id()
-        while not result_id:
-            time.sleep(sleep_time)
-            result_id = self.query_result_id()
-        data_set = self.query_result(result_id)
+        data_set = self.get_results()
         log.info(f"got {len(data_set)} records from last query")
         return data_set
 
@@ -215,7 +215,7 @@ class DuneAnalytics:
         )
         for _ in range(0, self.max_retries):
             try:
-                return self.execute_and_await_results(self.ping_frequency)
+                return self.execute_and_await_results()
             except RuntimeError as err:
                 log.warning(
                     f"failed with {err}. Re-establishing connection and trying again"
@@ -223,9 +223,3 @@ class DuneAnalytics:
                 self.login()
                 self.refresh_auth_token()
         raise Exception(f"Maximum retries ({self.max_retries}) exceeded")
-
-    @staticmethod
-    def open_query(filepath: str) -> str:
-        """Opens `filename` and returns as string"""
-        with open(filepath, "r", encoding="utf-8") as query_file:
-            return query_file.read()

@@ -9,7 +9,9 @@ from typing import Optional, Any
 
 from src.util import datetime_parser
 
-RawDuneResponse = dict[str, dict[str, list[dict[str, dict[str, str]]]]]
+
+ListInnerResponse = dict[str, list[dict[str, dict[str, str]]]]
+DictInnerResponse = dict[str, dict[str, Any]]
 
 DuneRecord = dict[str, str]
 
@@ -17,6 +19,7 @@ DuneRecord = dict[str, str]
 @dataclass
 class DuneSQLQuery:
     """Contains all the relevant data necessary to initiate a Dune Query"""
+
     query_id: int
     name: str
     raw_sql: str
@@ -58,10 +61,7 @@ class QueryResults:
     meta: MetaData
     data: list[DuneRecord]
 
-    def __init__(self, payload: dict[str, dict[str, list[dict[str, Any]]]]):
-        # Ensure data integrity
-        assert payload.keys() == {"data"}, "Expected payload dict to have data key"
-        data = payload["data"]
+    def __init__(self, data: ListInnerResponse):
         assert data.keys() == {"query_results", "get_result_by_result_id"}
         assert len(data["query_results"]) == 1, "Unexpected query results"
 

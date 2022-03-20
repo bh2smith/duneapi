@@ -14,3 +14,9 @@ def datetime_parser(dct: dict[str, Any]) -> dict[str, Any]:
             except ValueError:
                 pass
     return dct
+
+
+def open_query(filepath: str) -> str:
+    """Opens `filename` and returns as string"""
+    with open(filepath, "r", encoding="utf-8") as query_file:
+        return query_file.read()

@@ -1,13 +1,77 @@
 """All operations/routes available for interaction with Dune API - looks like graphQL"""
-from typing import Collection
+import logging.config
+from dataclasses import dataclass
+from typing import Collection, Any
 
-from src.types import DuneSQLQuery
+from requests import Response
+
+from src.types import DuneSQLQuery, ListInnerResponse, DictInnerResponse
+
+log = logging.getLogger(__name__)
+logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 
 PostData = dict[str, Collection[str]]
+# key_map = {"outer1": {"inner11", "inner12}, "outer2": {"inner21"}}
+KeyMap = dict[str, set[str]]
 
 
-def find_result_post(result_id) -> PostData:
-    """Returns json data to make a post of type FindResultDataByResult"""
+def _pre_validate_response(response: Response, key_map: KeyMap) -> dict[str, Any]:
+    if response.status_code != 200:
+        raise SystemExit("Dune post failed with", response)
+    response_json = response.json()
+    if "errors" in response_json:
+        raise RuntimeError("Dune API Request failed with", response_json)
+    if "data" not in response_json.keys():
+        log.error(f"response json {response_json} missing data key")
+
+    response_data: dict[str, Any] = response_json["data"]
+    assert response_data.keys() == key_map.keys()
+
+    return response_data
+
+
+def validate_and_parse_dict_response(
+    response: Response, key_map: KeyMap
+) -> DictInnerResponse:
+    """
+    Validates responses of dict inner type, and
+    returns partially parsed response data
+    """
+    response_data = _pre_validate_response(response, key_map)
+    for key, val in key_map.items():
+        assert isinstance(response_data[key], dict)
+        next_level = response_data[key].keys()
+        assert next_level == val, f"Fail {next_level} != {val}"
+
+    return response_data
+
+
+def validate_and_parse_list_response(
+    response: Response, key_map: KeyMap
+) -> ListInnerResponse:
+    """
+    Validates responses with list inner type, and
+    returns partially parsed response data
+    """
+    response_data = _pre_validate_response(response, key_map)
+    for key, val in key_map.items():
+        assert isinstance(response_data[key], list)
+        next_level = response_data[key][0].keys()
+        assert next_level == val, f"Fail {next_level} != {val}"
+
+    return response_data
+
+
+@dataclass
+class Post:
+    """Holds query json and response validation details"""
+
+    data: PostData
+    key_map: KeyMap
+
+
+def find_result_post(result_id: str) -> Post:
+    """Returns json data for a post of type FindResultDataByResult"""
     query = """
     query FindResultDataByResult($result_id: uuid!) {
       query_results(where: { id: { _eq: $result_id } }) {
@@ -23,14 +87,28 @@ def find_result_post(result_id) -> PostData:
       }
     }
     """
-    return {
-        "operationName": "FindResultDataByResult",
-        "variables": {"result_id": result_id},
-        "query": query,
-    }
+    return Post(
+        data={
+            "operationName": "FindResultDataByResult",
+            "variables": {"result_id": result_id},
+            "query": query,
+        },
+        key_map={
+            "query_results": {
+                "id",
+                "job_id",
+                "error",
+                "runtime",
+                "generated_at",
+                "columns",
+            },
+            "get_result_by_result_id": {"data"},
+        },
+    )
 
 
-def get_result_post(query_id: int) -> PostData:
+def get_result_post(query_id: int) -> Post:
+    """Returns json data for a post of type GetResult"""
     query = """
     query GetResult($query_id: Int!, $parameters: [Parameter!]) {
       get_result(query_id: $query_id, parameters: $parameters) {
@@ -39,14 +117,18 @@ def get_result_post(query_id: int) -> PostData:
       }
     }
     """
-    return {
-        "operationName": "GetResult",
-        "variables": {"query_id": query_id},
-        "query": query,
-    }
+    return Post(
+        data={
+            "operationName": "GetResult",
+            "variables": {"query_id": query_id},
+            "query": query,
+        },
+        key_map={"get_result": {"job_id", "result_id"}},
+    )
 
 
-def execute_query_post(query_id: int) -> PostData:
+def execute_query_post(query_id: int) -> Post:
+    """Returns json data for a post of type ExecuteQuery"""
     query = """
     mutation ExecuteQuery($query_id: Int!, $parameters: [Parameter!]!) {
       execute_query(query_id: $query_id, parameters: $parameters) {
@@ -54,15 +136,19 @@ def execute_query_post(query_id: int) -> PostData:
       }
     }
     """
-    return {
-        "operationName": "ExecuteQuery",
-        "variables": {"query_id": query_id, "parameters": []},
-        "query": query,
-    }
+    return Post(
+        data={
+            "operationName": "ExecuteQuery",
+            "variables": {"query_id": query_id, "parameters": []},
+            "query": query,
+        },
+        key_map={"execute_query": {"job_id"}},
+    )
 
 
-def initiate_query_post(query: DuneSQLQuery) -> PostData:
-    object_data = {
+def initiate_query_post(query: DuneSQLQuery) -> Post:
+    """Returns json data for a post of type UpsertQuery"""
+    object_data: dict[str, Any] = {
         "id": query.query_id,
         "schedule": None,
         "dataset_id": query.network.value,
@@ -82,27 +168,50 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
             },
         },
     }
-    return {
-        "operationName": "UpsertQuery",
-        "variables": {
-            "object": object_data,
-            "on_conflict": {
-                "constraint": "queries_pkey",
-                "update_columns": [
-                    "dataset_id",
-                    "name",
-                    "description",
-                    "query",
-                    "schedule",
-                    "is_archived",
-                    "is_temp",
-                    "tags",
-                    "parameters",
-                ],
+    key_map = {
+        "insert_queries_one": {
+            "id",
+            "dataset_id",
+            "name",
+            "description",
+            "query",
+            "private_to_group_id",
+            "is_temp",
+            "is_archived",
+            "created_at",
+            "updated_at",
+            "schedule",
+            "tags",
+            "parameters",
+            "visualizations",
+            "forked_query",
+            "user",
+            "query_favorite_count_all",
+            "favorite_queries",
+        }
+    }
+    return Post(
+        data={
+            "operationName": "UpsertQuery",
+            "variables": {
+                "object": object_data,
+                "on_conflict": {
+                    "constraint": "queries_pkey",
+                    "update_columns": [
+                        "dataset_id",
+                        "name",
+                        "description",
+                        "query",
+                        "schedule",
+                        "is_archived",
+                        "is_temp",
+                        "tags",
+                        "parameters",
+                    ],
+                },
+                "session_id": 0,  # must be an int, but value is irrelevant
             },
-            "session_id": 0,  # This value must be an int, but it doesn't matter what
-        },
-        "query": """
+            "query": """
             mutation UpsertQuery(
               $session_id: Int!
               $object: queries_insert_input!
@@ -184,4 +293,6 @@ def initiate_query_post(query: DuneSQLQuery) -> PostData:
               }
             }
             """,
-    }
+        },
+        key_map=key_map,
+    )

@@ -2,7 +2,7 @@ import datetime
 import json
 import unittest
 
-from src.pydune.types import Network, MetaData, QueryResults, QueryParameter
+from src.duneapi.types import Network, MetaData, QueryResults, QueryParameter
 
 
 class TestNetworkEnum(unittest.TestCase):

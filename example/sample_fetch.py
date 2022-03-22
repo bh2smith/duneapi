@@ -4,10 +4,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-from src.pydune.api import DuneAPI
-from src.pydune.query import DuneQuery
-from src.pydune.types import Network, QueryParameter
-from src.pydune.util import open_query
+from src.duneapi.api import DuneAPI
+from src.duneapi.query import DuneQuery
+from src.duneapi.types import Network, QueryParameter
+from src.duneapi.util import open_query
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Record:
 def fetch_records(dune: DuneAPI) -> list[Record]:
     """Initiates and executes Dune query, returning results as Python Objects"""
     sample_query = DuneQuery.from_environment(
-        raw_sql=open_query("./src/example/sample_query.sql"),
+        raw_sql=open_query("./example/sample_query.sql"),
         name="Sample Query",
         network=Network.MAINNET,
         parameters=[

@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from src.pydune.util import datetime_parser, open_query
+from src.duneapi.util import datetime_parser, open_query
 
 
 class TestUtilities(unittest.TestCase):

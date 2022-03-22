@@ -13,7 +13,7 @@ bdccd5ba543a8f3679e2c81e18cee846af47bc52
 ## Import as Project Dependency
 
 ```shell
-pip install pydune
+pip install src
 ```
 
 ### Example Usage
@@ -48,7 +48,7 @@ First record Record(
 ```
 
 To fetch your own data follow the code outline
-in [sample_fetch.py](src/example/sample_fetch.py)
+in [sample_fetch.py](example/sample_fetch.py)
 
 ## Contributing and Local Development
 

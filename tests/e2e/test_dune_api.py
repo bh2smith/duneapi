@@ -1,8 +1,8 @@
 import unittest
 
-from src.pydune.api import DuneAPI
-from src.pydune.query import DuneQuery
-from src.pydune.types import Network, QueryParameter
+from src.duneapi.api import DuneAPI
+from src.duneapi.query import DuneQuery
+from src.duneapi.types import Network, QueryParameter
 
 
 class TestDuneAnalytics(unittest.TestCase):

@@ -4,8 +4,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="src",
-    version="2.0.2",
+    name="duneapi",
+    version="2.0.4",
     author="Benjamin H. Smith",
     author_email="bh2smith@gmail.com",
     description="A simple framework for interacting with Dune Analytics unsupported API.",

@@ -5,7 +5,7 @@
 [![Build](https://github.com/bh2smith/duneapi/actions/workflows/pull-request.yaml/badge.svg)](https://github.com/bh2smith/duneapi/actions/workflows/pull-request.yml)
 
 A simple framework for interacting with Dune Analytics unsupported API. The primary
-class (`DuneAnalytics`) of this repo is adapted from
+class (`DuneAPI`) of this repo is adapted from
 https://github.com/itzmestar/duneanalytics at commit
 bdccd5ba543a8f3679e2c81e18cee846af47bc52
 

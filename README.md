@@ -9,24 +9,11 @@ class (`DuneAPI`) of this repo is adapted from
 https://github.com/itzmestar/duneanalytics at commit
 bdccd5ba543a8f3679e2c81e18cee846af47bc52
 
-## Installation & Usage
+## Import as Project Dependency
 
 ```shell
-python3 -m venv venv
-source ./env/bin/activate
-pip install -r requirements.txt
-cp .env.sample .env       <----- Copy your Dune credentials here!
-source .env
+pip install duneapi
 ```
-
-Fill out your Dune credentials in the `.env` file. The Dune user and password are
-straight-forward login credentials to Dune Analytics. The `DUNE_QUERY_ID` is an integer
-id found in the URL of a query when saved in the Dune interface. This should be created
-beforehand, but the same query id can be used everywhere throughout the program (as long
-as it is owned by the account corresponding to the user credentials provided).
-
-Each individual file should be executable as a standalone script. Many of the scripts
-found here initiate and execute query, returning the results.
 
 ### Example Usage
 
@@ -47,3 +34,27 @@ First record Record(
     time='2022-03-10T23:50:16+00:00'
 )
 ```
+
+To fetch your own data follow the code outline
+in [sample_fetch.py](./src/example/sample_fetch.py)
+
+## Contributing and Local Development
+
+Clone this Repo and install as follows.
+
+```shell
+python3 -m venv venv
+source ./env/bin/activate
+pip install -r requirements.txt
+cp .env.sample .env       <----- Copy your Dune credentials here!
+source .env
+```
+
+Fill out your Dune credentials in the `.env` file. The Dune user and password are
+straight-forward login credentials to Dune Analytics. The `DUNE_QUERY_ID` is an integer
+id found in the URL of a query when saved in the Dune interface. This should be created
+beforehand, but the same query id can be used everywhere throughout the program (as long
+as it is owned by the account corresponding to the user credentials provided).
+
+Each individual file should be executable as a standalone script. Many of the scripts
+found here initiate and execute query, returning the results.

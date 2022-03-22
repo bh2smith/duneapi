@@ -10,7 +10,7 @@ class TestDuneAnalytics(unittest.TestCase):
     def setUp(self) -> None:
         self.dune = DuneAPI("user", "password")
         self.query = DuneQuery(
-            raw_sql="", network=Network.MAINNET, name="Test", query_id=0, parameters=[]
+            raw_sql="", network=Network.MAINNET, query_id=0, parameters=[], name="Test"
         )
 
     def test_retry(self):
@@ -27,14 +27,6 @@ class TestDuneAnalytics(unittest.TestCase):
         self.dune.execute_and_await_results = Mock(side_effect=Exception("Max retries"))
         with self.assertRaises(Exception):
             self.dune.fetch(self.query)
-
-    # TODO - test QueryResult constructor
-    # def test_parse_response(self):
-    #     sample_response = {
-    #         "data": {"get_result_by_result_id": [{"data": {"col1": 1, "col2": 2}}]}
-    #     }
-    #     expected_result = [{"col1": 1, "col2": 2}]
-    #     self.assertEqual(self.dune.parse_response(sample_response), expected_result)
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ class TestDuneAnalytics(unittest.TestCase):
         five, one = 5, 1
         parameter_name = "IntParameter"
         column_name = "value"
-        query = DuneQuery(
+        query = DuneQuery.from_environment(
             # Note that consecutive double brace brackets in formatted strings
             # become single brace brackets, so this query is
             # select 5 - '{{IntParameter}}' as value

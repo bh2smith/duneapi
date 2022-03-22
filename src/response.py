@@ -3,7 +3,7 @@ from typing import Any
 
 from requests import Response
 
-from src.request import KeyMap
+from src.dune_query import KeyMap
 from src.types import ListInnerResponse, DictInnerResponse
 
 
@@ -61,7 +61,6 @@ def validate_and_parse_list_response(
         assert isinstance(
             response_data[key], list
         ), f"Invalid response type {type(response_data[key])}"
-        print(response_data[key])
         next_level = response_data[key][0].keys()
         assert next_level == val, f"Fail {next_level} != {val}"
 

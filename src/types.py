@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Any
@@ -14,17 +13,6 @@ ListInnerResponse = dict[str, list[dict[str, dict[str, str]]]]
 DictInnerResponse = dict[str, dict[str, Any]]
 
 DuneRecord = dict[str, str]
-
-
-@dataclass
-class DuneSQLQuery:
-    """Contains all the relevant data necessary to initiate a Dune Query"""
-
-    query_id: int
-    name: str
-    raw_sql: str
-    network: Network
-    parameters: list[QueryParameter]
 
 
 # pylint: disable=too-few-public-methods

@@ -2,12 +2,16 @@ import unittest
 from unittest.mock import MagicMock, Mock
 
 from src.dune_analytics import DuneAnalytics
+from src.dune_query import DuneSQLQuery
 from src.types import Network
 
 
 class TestDuneAnalytics(unittest.TestCase):
     def setUp(self) -> None:
-        self.dune = DuneAnalytics("user", "password", 0)
+        self.dune = DuneAnalytics("user", "password")
+        self.query = DuneSQLQuery(
+            raw_sql="", network=Network.MAINNET, name="Test", query_id=0, parameters=[]
+        )
 
     def test_retry(self):
         self.dune.execute_and_await_results = MagicMock(return_value=1)
@@ -15,17 +19,14 @@ class TestDuneAnalytics(unittest.TestCase):
         self.dune.open_query = MagicMock(return_value="")
         self.dune.max_retries = 0
         with self.assertRaises(Exception):
-            self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query")
+            self.dune.fetch(self.query)
 
         self.dune.max_retries = 1
-        self.assertEqual(
-            self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query"),
-            1,
-        )
+        self.assertEqual(self.dune.fetch(self.query), 1)
 
         self.dune.execute_and_await_results = Mock(side_effect=Exception("Max retries"))
         with self.assertRaises(Exception):
-            self.dune.fetch(query_str="", network=Network.MAINNET, name="Test Query")
+            self.dune.fetch(self.query)
 
     # TODO - test QueryResult constructor
     # def test_parse_response(self):

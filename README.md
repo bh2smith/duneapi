@@ -1,10 +1,11 @@
 # Dune Analytics API
-[![Python 3.9](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3102/) 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
+
+[![Python 3.9](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3102/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build](https://github.com/bh2smith/duneapi/actions/workflows/pull-request.yaml/badge.svg)](https://github.com/bh2smith/duneapi/actions/workflows/pull-request.yml)
 
-A simple framework for interacting with Dune Analytics unsupported API. The primary
+A simple framework for interacting with Dune Analytics' unsupported API. The primary
 class (`DuneAPI`) of this repo is adapted from
 https://github.com/itzmestar/duneanalytics at commit
 bdccd5ba543a8f3679e2c81e18cee846af47bc52
@@ -17,9 +18,20 @@ pip install duneapi
 
 ### Example Usage
 
+Fill out your Dune credentials in the `.env` file. The Dune user and password are
+straight-forward login credentials to Dune Analytics. The `DUNE_QUERY_ID` is an integer
+id found in the URL of a query when saved in the Dune interface. This should be created
+beforehand, but the same query id can be used everywhere throughout the program (as long
+as it is owned by the account corresponding to the user credentials provided).
+
+You do not have to provide the query id as an environment variable, but doing so, will
+allow you to use the same id for all fetching needs. For dashboard management, you will
+need to have a unique id for each query.
+
 To fetch some sample ethereum block data, run the sample script as:
 
 ```shell
+source .env
 python -m src.example.sample_fetch
 ```
 
@@ -36,7 +48,7 @@ First record Record(
 ```
 
 To fetch your own data follow the code outline
-in [sample_fetch.py](./src/example/sample_fetch.py)
+in [sample_fetch.py](src/example/sample_fetch.py)
 
 ## Contributing and Local Development
 
@@ -49,12 +61,3 @@ pip install -r requirements.txt
 cp .env.sample .env       <----- Copy your Dune credentials here!
 source .env
 ```
-
-Fill out your Dune credentials in the `.env` file. The Dune user and password are
-straight-forward login credentials to Dune Analytics. The `DUNE_QUERY_ID` is an integer
-id found in the URL of a query when saved in the Dune interface. This should be created
-beforehand, but the same query id can be used everywhere throughout the program (as long
-as it is owned by the account corresponding to the user credentials provided).
-
-Each individual file should be executable as a standalone script. Many of the scripts
-found here initiate and execute query, returning the results.

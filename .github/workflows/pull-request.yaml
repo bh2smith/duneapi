@@ -14,10 +14,8 @@ jobs:
           python-version: '3.10'
       - name: Install Requirements
         run: pip install -r requirements.txt
-      - name: Lint & Format
-        run: pylint src/ && black --check ./
-      - name: Type Check
-        run: mypy src --strict
+      - name: Lint, Format and Types
+        run: pylint src/ && black --check ./ && mypy src --strict
       - name: Unit Tests
         run: python -m pytest tests/unit
       - name: End to End Tests

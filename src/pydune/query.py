@@ -7,7 +7,7 @@ import os
 from dataclasses import dataclass
 from typing import Any, Collection, Optional
 
-from src.types import Network, QueryParameter
+from src.pydune.types import Network, QueryParameter
 
 PostData = dict[str, Collection[str]]
 # key_map = {"outer1": {"inner11", "inner12}, "outer2": {"inner21"}}

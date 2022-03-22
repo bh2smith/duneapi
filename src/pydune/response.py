@@ -3,8 +3,8 @@ from typing import Any
 
 from requests import Response
 
-from src.dune_query import KeyMap
-from src.types import ListInnerResponse, DictInnerResponse
+from src.pydune.query import KeyMap
+from src.pydune.types import ListInnerResponse, DictInnerResponse
 
 
 def pre_validate_response(response: Response, key_map: KeyMap) -> dict[str, Any]:

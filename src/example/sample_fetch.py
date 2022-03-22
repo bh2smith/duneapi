@@ -4,10 +4,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-from src.dune_api import DuneAPI
-from src.dune_query import DuneQuery
-from src.types import Network, QueryParameter
-from src.util import open_query
+from src.pydune.api import DuneAPI
+from src.pydune.query import DuneQuery
+from src.pydune.types import Network, QueryParameter
+from src.pydune.util import open_query
 
 
 @dataclass

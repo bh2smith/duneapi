@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 from requests import Response
 
-from src.response import (
+from src.pydune.response import (
     pre_validate_response,
     validate_and_parse_dict_response,
     validate_and_parse_list_response,

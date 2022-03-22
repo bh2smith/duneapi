@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, Any
 
-from src.util import datetime_parser
+from src.pydune.util import datetime_parser
 
 
 ListInnerResponse = dict[str, list[dict[str, dict[str, str]]]]

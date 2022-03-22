@@ -12,12 +12,12 @@ from typing import Optional
 
 from requests import Session, Response
 
-from src.dune_query import DuneQuery, Post
-from src.response import (
+from src.pydune.query import DuneQuery, Post
+from src.pydune.response import (
     validate_and_parse_dict_response,
     validate_and_parse_list_response,
 )
-from src.types import DuneRecord, QueryResults
+from src.pydune.types import DuneRecord, QueryResults
 
 log = logging.getLogger(__name__)
 logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)

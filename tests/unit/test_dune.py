@@ -1,15 +1,15 @@
 import unittest
 from unittest.mock import MagicMock, Mock
 
-from src.dune_analytics import DuneAnalytics
-from src.dune_query import DuneSQLQuery
+from src.dune_api import DuneAPI
+from src.dune_query import DuneQuery
 from src.types import Network
 
 
 class TestDuneAnalytics(unittest.TestCase):
     def setUp(self) -> None:
-        self.dune = DuneAnalytics("user", "password")
-        self.query = DuneSQLQuery(
+        self.dune = DuneAPI("user", "password")
+        self.query = DuneQuery(
             raw_sql="", network=Network.MAINNET, name="Test", query_id=0, parameters=[]
         )
 

@@ -12,7 +12,7 @@ from typing import Optional
 
 from requests import Session, Response
 
-from src.dune_query import DuneSQLQuery, Post
+from src.dune_query import DuneQuery, Post
 from src.response import (
     validate_and_parse_dict_response,
     validate_and_parse_list_response,
@@ -26,7 +26,7 @@ BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"
 
 
-class DuneAnalytics:
+class DuneAPI:
     """
     Acts as API client for dune.xyz. All requests to be made through this class.
     """
@@ -63,9 +63,9 @@ class DuneAnalytics:
         self.session.headers.update(headers)
 
     @staticmethod
-    def new_from_environment() -> DuneAnalytics:
+    def new_from_environment() -> DuneAPI:
         """Initialize & authenticate a Dune client from the current environment"""
-        dune = DuneAnalytics(
+        dune = DuneAPI(
             os.environ["DUNE_USER"],
             os.environ["DUNE_PASSWORD"],
         )
@@ -113,7 +113,7 @@ class DuneAnalytics:
         self.fetch_auth_token()
         self.session.headers.update({"authorization": f"Bearer {self.token}"})
 
-    def initiate_query(self, query: DuneSQLQuery) -> None:
+    def initiate_query(self, query: DuneQuery) -> None:
         """
         Initiates a new query.
         If no exception is raised, post was success!
@@ -122,13 +122,13 @@ class DuneAnalytics:
         response = self.post_dune_request(post_data)
         validate_and_parse_dict_response(response, post_data.key_map)
 
-    def execute_query(self, query: DuneSQLQuery) -> None:
+    def execute_query(self, query: DuneQuery) -> None:
         """Executes query at query_id"""
         post_data = query.execute_query_post()
         response = self.post_dune_request(post_data)
         validate_and_parse_dict_response(response, post_data.key_map)
 
-    def query_result_id(self, query: DuneSQLQuery) -> Optional[str]:
+    def query_result_id(self, query: DuneQuery) -> Optional[str]:
         """
         Fetch the query result id for a query
         :return: string representation of integer result id
@@ -139,14 +139,14 @@ class DuneAnalytics:
 
         return response_data["get_result"].get("result_id", None)
 
-    def get_results(self, query: DuneSQLQuery) -> list[DuneRecord]:
+    def get_results(self, query: DuneQuery) -> list[DuneRecord]:
         """Fetch the result for a query by id"""
         result_id = self.query_result_id(query)
         while not result_id:
             time.sleep(self.ping_frequency)
             log.debug("Awaiting results... ")
             result_id = self.query_result_id(query)
-        post_data = DuneSQLQuery.find_result_post(result_id)
+        post_data = DuneQuery.find_result_post(result_id)
         response = self.post_dune_request(post_data)
         response_data = validate_and_parse_list_response(response, post_data.key_map)
         return QueryResults(response_data).data
@@ -164,7 +164,7 @@ class DuneAnalytics:
 
         return response
 
-    def execute_and_await_results(self, query: DuneSQLQuery) -> list[DuneRecord]:
+    def execute_and_await_results(self, query: DuneQuery) -> list[DuneRecord]:
         """
         Executes query by ID and awaits completion.
         :return: parsed list of dict records returned from query
@@ -174,7 +174,7 @@ class DuneAnalytics:
         log.info(f"got {len(data_set)} records from last query")
         return data_set
 
-    def fetch(self, query: DuneSQLQuery) -> list[DuneRecord]:
+    def fetch(self, query: DuneQuery) -> list[DuneRecord]:
         """
         Pushes new query, executes and awaiting query completion
         :return: list query records as dictionaries

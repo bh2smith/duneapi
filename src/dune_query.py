@@ -1,6 +1,7 @@
 """
 The Base class for a Dune Query, along with Request Post Data
 All operations/routes available for interaction with Dune API - looks like graphQL"""
+import os
 from dataclasses import dataclass
 from typing import Any, Collection
 
@@ -20,16 +21,16 @@ class Post:
 
 
 @dataclass
-class DuneSQLQuery:
+class DuneQuery:
     """Contains all the relevant data necessary to initiate a Dune Query"""
 
-    query_id: int
     name: str
     raw_sql: str
     network: Network
     parameters: list[QueryParameter]
+    query_id: int = int(os.environ["DUNE_QUERY_ID"])
 
-    def _request_parameters(self):
+    def _request_parameters(self) -> list[dict[str, str]]:
         return [p.to_dict() for p in self.parameters]
 
     def initiate_query_post(self) -> Post:

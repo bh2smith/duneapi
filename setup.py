@@ -5,10 +5,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="duneapi",
-    version="2.0.4",
+    version="2.0.0",
     author="Benjamin H. Smith",
     author_email="bh2smith@gmail.com",
-    description="A simple framework for interacting with Dune Analytics unsupported API.",
+    description="A simple framework for interacting with Dune Analytics' unsupported API.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/bh2smith/duneapi",

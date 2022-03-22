@@ -16,6 +16,8 @@ bdccd5ba543a8f3679e2c81e18cee846af47bc52
 pip install src
 ```
 
+Then you should be able to write python scripts similar to the following:
+
 ### Example Usage
 
 Fill out your Dune credentials in the `.env` file. The Dune user and password are
@@ -28,11 +30,37 @@ You do not have to provide the query id as an environment variable, but doing so
 allow you to use the same id for all fetching needs. For dashboard management, you will
 need to have a unique id for each query.
 
+```python
+from duneapi.api import DuneAPI
+from duneapi.query import DuneQuery
+from duneapi.types import Network, QueryParameter, DuneRecord
+from duneapi.util import open_query
+
+
+def fetch_records(dune: DuneAPI) -> list[DuneRecord]:
+    sample_query = DuneQuery.from_environment(
+        raw_sql=open_query("PATH_TO_SOME_SQL_FILE"),
+        name="Sample Query",
+        network=Network.MAINNET,
+        parameters=[
+            QueryParameter.number_type("IntParam", 10),
+            QueryParameter.text_type("TextParam", "aba"),
+        ],
+    )
+    return dune.fetch(sample_query)
+
+
+if __name__ == "__main__":
+    dune_connection = DuneAPI.new_from_environment()
+    records = fetch_records(dune_connection)
+    print("First result:", records[0])
+```
+
 To fetch some sample ethereum block data, run the sample script as:
 
 ```shell
 source .env
-python -m src.example.sample_fetch
+python -m example.sample_fetch
 ```
 
 This will result in the following console logs:

@@ -60,7 +60,10 @@ def validate_and_parse_list_response(
         assert isinstance(
             response_data[key], list
         ), f"Invalid response type {type(response_data[key])}"
-        next_level = response_data[key][0].keys()
-        assert next_level == val, f"Fail {next_level} != {val}"
+
+        if len(response_data[key]) > 0:
+            # Only validate the list if it contains entries
+            next_level = response_data[key][0].keys()
+            assert next_level == val, f"Fail {next_level} != {val}"
 
     return response_data

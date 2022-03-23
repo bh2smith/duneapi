@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from src.duneapi.api import DuneAPI
-from src.duneapi.query import DuneQuery
-from src.duneapi.types import Network, QueryParameter
+from src.duneapi.types import Network, QueryParameter, DuneQuery
 from src.duneapi.util import open_query
 
 

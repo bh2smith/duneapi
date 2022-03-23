@@ -3,7 +3,7 @@ from typing import Any
 
 from requests import Response
 
-from src.duneapi.types import ListInnerResponse, DictInnerResponse, KeyMap
+from .types import ListInnerResponse, DictInnerResponse, KeyMap
 
 
 def pre_validate_response(response: Response, key_map: KeyMap) -> dict[str, Any]:

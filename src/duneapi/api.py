@@ -12,14 +12,18 @@ from typing import Optional
 
 from requests import Session, Response
 
-from src.duneapi.response import (
+from .response import (
     validate_and_parse_dict_response,
     validate_and_parse_list_response,
 )
-from src.duneapi.types import DuneRecord, QueryResults, DuneQuery, Post
+from .types import DuneRecord, QueryResults, DuneQuery, Post
 
 log = logging.getLogger(__name__)
-logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
+try:
+    logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
+except KeyError:
+    pass
+
 
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"

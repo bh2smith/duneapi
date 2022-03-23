@@ -13,7 +13,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Collection, Optional
 
-from src.duneapi.util import datetime_parser
+from .util import datetime_parser
 
 PostData = dict[str, Collection[str]]
 # key_map = {"outer1": {"inner11", "inner12}, "outer2": {"inner21"}}

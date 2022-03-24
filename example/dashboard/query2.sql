@@ -1,0 +1,1 @@
+select 60 - 90 as val

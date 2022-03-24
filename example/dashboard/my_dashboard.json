@@ -1,0 +1,12 @@
+[
+  {
+    "id": 533353,
+    "file": "./example/dashboard/query1.sql",
+    "network": "mainnet"
+  },
+  {
+    "id": 533351,
+    "file": "./example/dashboard/query2.sql",
+    "network": "gchain"
+  }
+]

@@ -14,7 +14,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Collection, Optional
 
-from .util import datetime_parser
+from .util import datetime_parser, open_query, postgres_date
 
 PostData = dict[str, Collection[str]]
 # key_map = {"outer1": {"inner11", "inner12}, "outer2": {"inner21"}}
@@ -136,6 +136,22 @@ class ParameterType(Enum):
     NUMBER = "number"
     DATE = "datetime"
 
+    @classmethod
+    def from_string(cls, type_str: str) -> ParameterType:
+        """
+        Attempts to parse Parameter from string.
+        returns None is no match
+        """
+        patterns = {
+            r"text": cls.TEXT,
+            r"number": cls.NUMBER,
+            r"date": cls.DATE,
+        }
+        for pattern, network in patterns.items():
+            if re.match(pattern, type_str, re.IGNORECASE):
+                return network
+        raise ValueError(f"could not parse Network from '{type_str}'")
+
 
 class QueryParameter:
     """Class whose instances are Dune Compatible Query Parameters"""
@@ -161,8 +177,13 @@ class QueryParameter:
         return cls(name, ParameterType.NUMBER, value)
 
     @classmethod
-    def date_type(cls, name: str, value: datetime) -> QueryParameter:
-        """Constructs a Query parameter of type date"""
+    def date_type(cls, name: str, value: datetime | str) -> QueryParameter:
+        """
+        Constructs a Query parameter of type date.
+        For convenience, we allow proper datetime type, or string
+        """
+        if isinstance(value, str):
+            value = postgres_date(value)
         return cls(name, ParameterType.DATE, value)
 
     def _value_str(self) -> str:
@@ -186,6 +207,23 @@ class QueryParameter:
         }
         return results
 
+    @classmethod
+    def from_dict(cls, obj: dict[str, str]) -> QueryParameter:
+        """
+        Constructs Query Parameters from json.
+        TODO - this could probably be done similar to the __init__ method of MetaData
+        """
+        name, value = obj["name"], obj["value"]
+        match ParameterType.from_string(obj["type"]):
+            case ParameterType.DATE:
+                return cls.date_type(name, value)
+            case ParameterType.TEXT:
+                return cls.text_type(name, value)
+            case ParameterType.NUMBER:
+                # Not exactly sure if it is best to cast here.
+                # This class has gotten a bt out of hand.
+                return cls.number_type(name, float(value))
+
 
 @dataclass
 class Post:
@@ -193,6 +231,31 @@ class Post:
 
     data: PostData
     key_map: KeyMap
+
+
+@dataclass
+class DashboardTile:
+    """
+    A slightly different arrangement of data that is essentially equivalent to a Query
+    Acts as an intermediary type when composing queries from json
+    """
+
+    name: str
+    file: str
+    query_id: int
+    network: Network
+    parameters: list[QueryParameter]
+
+    @classmethod
+    def from_dict(cls, obj: dict[str, str]) -> DashboardTile:
+        """Constructs Record from Dune Data as string dict"""
+        return cls(
+            name=obj.get("name", "untitled"),
+            file=obj["file"],
+            network=Network.from_string(obj["network"]),
+            query_id=int(obj["id"]),
+            parameters=[QueryParameter.from_dict(p) for p in obj.get("parameters", [])],
+        )
 
 
 @dataclass
@@ -220,6 +283,17 @@ class DuneQuery:
             parameters=parameters if parameters is not None else [],
             name=name if name else "untitled",
             query_id=int(os.environ["DUNE_QUERY_ID"]),
+        )
+
+    @classmethod
+    def from_tile(cls, tile: DashboardTile) -> DuneQuery:
+        """Constructs Dune Query from DashboardTile object"""
+        return cls(
+            name=tile.name,
+            raw_sql=open_query(tile.file),
+            network=tile.network,
+            parameters=tile.parameters,
+            query_id=tile.query_id,
         )
 
     def _request_parameters(self) -> list[dict[str, str]]:

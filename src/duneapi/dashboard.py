@@ -1,55 +1,50 @@
+"""Dashboard management class"""
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 
 from src.duneapi.api import DuneAPI
-from .types import DuneQuery, Network
-from .util import open_query
+from .types import DuneQuery, DashboardTile
 
-
-@dataclass
-class DashboardTile:
-    file: str
-    query_id: int
-    name: str = "Untitled"
-
-    @classmethod
-    def from_dict(cls, obj: dict[str, str]) -> DashboardTile:
-        """Constructs Record from Dune Data as string dict"""
-        return cls(
-            file=obj["file"],
-            query_id=int(obj["id"]),
-        )
+BASE_URL = "https://dune.xyz/"
 
 
 class DuneDashboard:
+    """
+    A Dune Dashboard consists of a family of queries
+    Primary functionality is to update all of them
+    without having to manually click refresh.
+    """
+
+    name: str
+    url: str
     queries: list[DuneQuery]
 
     def __init__(self, dashboard_conf: str):
-        with open(dashboard_conf, "r") as config:
-            tile_json = json.loads(config.read())
-            tiles = [DashboardTile.from_dict(item) for item in tile_json]
-        queries = [
-            DuneQuery(
-                name="Untitled",
-                raw_sql=open_query(tile.file),
-                network=Network.from_string(),
-                parameters=[],
-                query_id=tile.query_id,
-            )
-            for tile in tiles
-        ]
+        with open(dashboard_conf, "r", encoding="utf-8") as config:
+            data = json.loads(config.read())
+            meta, queries = data["meta"], data["queries"]
+            tiles = [DashboardTile.from_dict(item) for item in queries]
 
-        self.queries = queries
+        self.name = meta["name"]
+        self.url = meta["url"]
+        self.queries = [DuneQuery.from_tile(tile) for tile in tiles]
 
     def update(self):
+        """Creates a dune connection and updates/refreshes all dashboard queries"""
         api = DuneAPI.new_from_environment()
         for tile in self.queries:
             api.initiate_query(tile)
             api.execute_query(tile)
 
+    def __str__(self):
+        names = "\n".join(
+            f"  {q.name}: {BASE_URL}/queries/{q.query_id}" for q in self.queries
+        )
+        return f'Dashboard "{self.name}": {self.url}\nQueries:\n{names}'
+
 
 if __name__ == "__main__":
     dashboard = DuneDashboard("./example/dashboard/my_dashboard.json")
+    print(dashboard)
     dashboard.update()

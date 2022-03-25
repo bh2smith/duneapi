@@ -87,25 +87,30 @@ class Network(Enum):
     OPTIMISM_V2 = 10
 
     def __str__(self) -> str:
+        result = super.__str__(self)
         match self:
             case Network.SOLANA:
-                return "Solana"
+                result = "Solana"
             case Network.MAINNET:
-                return "Ethereum Mainnet"
+                result = "Ethereum Mainnet"
             case Network.GCHAIN:
-                return "Gnosis Chain"
+                result = "Gnosis Chain"
             case Network.POLYGON:
-                return "Polygon"
+                result = "Polygon"
             case Network.OPTIMISM_V1:
-                return "Optimism (OVM 1.0)"
+                result = "Optimism (OVM 1.0)"
             case Network.OPTIMISM_V2:
-                return "Optimism (OVM 2.0)"
+                result = "Optimism (OVM 2.0)"
             case Network.BINANCE:
-                return "Binance Smart Chain"
-        return super.__str__(self)
+                result = "Binance Smart Chain"
+        return result
 
     @classmethod
     def try_from_string(cls, network_str: str) -> Optional[Network]:
+        """
+        Attempts to parse network name from string.
+        returns None is no match
+        """
         patterns = {
             r"(.*)mainnet": cls.MAINNET,
             r"g(.*)chain": cls.GCHAIN,
@@ -119,7 +124,7 @@ class Network(Enum):
         for pattern, network in patterns.items():
             if re.match(pattern, network_str, re.IGNORECASE):
                 return network
-
+        return None
 
 
 class ParameterType(Enum):

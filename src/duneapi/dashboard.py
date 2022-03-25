@@ -34,7 +34,7 @@ class DuneDashboard:
             DuneQuery(
                 name="Untitled",
                 raw_sql=open_query(tile.file),
-                network=Network.MAINNET,
+                network=Network.from_string(),
                 parameters=[],
                 query_id=tile.query_id,
             )

@@ -106,7 +106,7 @@ class Network(Enum):
         return result
 
     @classmethod
-    def try_from_string(cls, network_str: str) -> Optional[Network]:
+    def from_string(cls, network_str: str) -> Network:
         """
         Attempts to parse network name from string.
         returns None is no match
@@ -124,7 +124,7 @@ class Network(Enum):
         for pattern, network in patterns.items():
             if re.match(pattern, network_str, re.IGNORECASE):
                 return network
-        return None
+        raise ValueError(f"could not parse Network from '{network_str}'")
 
 
 class ParameterType(Enum):

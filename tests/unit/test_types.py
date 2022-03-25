@@ -15,28 +15,30 @@ class TestNetworkEnum(unittest.TestCase):
 
     def test_try_from_string(self):
         # Mainnet
-        self.assertEqual(Network.MAINNET, Network.try_from_string("mainnet"))
-        self.assertEqual(Network.MAINNET, Network.try_from_string("MaInNet"))
-        self.assertEqual(Network.MAINNET, Network.try_from_string("ethereum mainnet"))
-        self.assertEqual(Network.MAINNET, Network.try_from_string("ETHERIUM MaInNet"))
-        self.assertEqual(Network.MAINNET, Network.try_from_string("MaInNet ethereum"))
+        self.assertEqual(Network.MAINNET, Network.from_string("mainnet"))
+        self.assertEqual(Network.MAINNET, Network.from_string("MaInNet"))
+        self.assertEqual(Network.MAINNET, Network.from_string("ethereum mainnet"))
+        self.assertEqual(Network.MAINNET, Network.from_string("ETHERIUM MaInNet"))
+        self.assertEqual(Network.MAINNET, Network.from_string("MaInNet ethereum"))
 
         # Gnosis Chain
-        self.assertEqual(Network.GCHAIN, Network.try_from_string("gchain"))
-        self.assertEqual(Network.GCHAIN, Network.try_from_string("Gnosis Chain"))
-        self.assertEqual(Network.GCHAIN, Network.try_from_string("GNOChain"))
+        self.assertEqual(Network.GCHAIN, Network.from_string("gchain"))
+        self.assertEqual(Network.GCHAIN, Network.from_string("Gnosis Chain"))
+        self.assertEqual(Network.GCHAIN, Network.from_string("GNOChain"))
 
         # Binance
-        self.assertEqual(Network.BINANCE, Network.try_from_string("bsc"))
-        self.assertEqual(Network.BINANCE, Network.try_from_string("BSC"))
-        self.assertEqual(Network.BINANCE, Network.try_from_string("Binance"))
+        self.assertEqual(Network.BINANCE, Network.from_string("bsc"))
+        self.assertEqual(Network.BINANCE, Network.from_string("BSC"))
+        self.assertEqual(Network.BINANCE, Network.from_string("Binance"))
 
         # Optimism
-        self.assertEqual(Network.OPTIMISM_V1, Network.try_from_string("optimism v1"))
-        self.assertEqual(Network.OPTIMISM_V2, Network.try_from_string("optimism v2"))
+        self.assertEqual(Network.OPTIMISM_V1, Network.from_string("optimism v1"))
+        self.assertEqual(Network.OPTIMISM_V2, Network.from_string("optimism v2"))
 
         # No match!
-        self.assertEqual(None, Network.try_from_string("toot"))
+        with self.assertRaises(ValueError) as err:
+            Network.from_string("toot")
+        self.assertEqual("could not parse Network from 'toot'", str(err.exception))
 
 
 class TestQueryResults(unittest.TestCase):

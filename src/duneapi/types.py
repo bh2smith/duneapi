@@ -78,7 +78,7 @@ class QueryResults:
 class Network(Enum):
     """Enum for supported EVM networks"""
 
-    SOLANA = 1  # Not sure yet if this is going to work, but the API seems very similar
+    SOLANA = 1
     MAINNET = 4
     GCHAIN = 6
     POLYGON = 7

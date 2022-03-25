@@ -223,6 +223,7 @@ class QueryParameter:
                 # Not exactly sure if it is best to cast here.
                 # This class has gotten a bt out of hand.
                 return cls.number_type(name, float(value))
+        raise ValueError(f"Could not parse Query parameter from {obj}")
 
 
 @dataclass
@@ -254,7 +255,10 @@ class DashboardTile:
             file=obj["file"],
             network=Network.from_string(obj["network"]),
             query_id=int(obj["id"]),
-            parameters=[QueryParameter.from_dict(p) for p in obj.get("parameters", [])],
+            parameters=[
+                QueryParameter.from_dict(json.loads(p))
+                for p in obj.get("parameters", [])
+            ],
         )
 
 

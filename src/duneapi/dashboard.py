@@ -30,14 +30,14 @@ class DuneDashboard:
         self.url = meta["url"]
         self.queries = [DuneQuery.from_tile(tile) for tile in tiles]
 
-    def update(self):
+    def update(self) -> None:
         """Creates a dune connection and updates/refreshes all dashboard queries"""
         api = DuneAPI.new_from_environment()
         for tile in self.queries:
             api.initiate_query(tile)
             api.execute_query(tile)
 
-    def __str__(self):
+    def __str__(self) -> str:
         names = "\n".join(
             f"  {q.name}: {BASE_URL}/queries/{q.query_id}" for q in self.queries
         )
@@ -46,5 +46,5 @@ class DuneDashboard:
 
 if __name__ == "__main__":
     dashboard = DuneDashboard("./example/dashboard/my_dashboard.json")
-    print(dashboard)
     dashboard.update()
+    print("Updated", dashboard)

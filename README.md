@@ -30,6 +30,8 @@ You do not have to provide the query id as an environment variable, but doing so
 allow you to use the same id for all fetching needs. For dashboard management, you will
 need to have a unique id for each query.
 
+#### Execute Query and Fetch Results from Dune
+
 ```python
 from duneapi.api import DuneAPI
 from duneapi.query import DuneQuery
@@ -54,6 +56,23 @@ if __name__ == "__main__":
     dune_connection = DuneAPI.new_from_environment()
     records = fetch_records(dune_connection)
     print("First result:", records[0])
+```
+
+#### Dashboard Management
+
+It will help to get aquainted with the Dashboard configuration file found in
+[./example/dashboard/my_dashboard.json](./example/dashboard/my_dashboard.json). This
+essentially requires filepath and query id to existing dune queries. Generally it is
+expected that you will use the family of queries contained in an existing dashboard, but
+there is no actual validation. Technically one could put all queries here and refresh
+them with this tool.
+
+```python
+from duneapi.dashboard import DuneDashboard
+
+dashboard = DuneDashboard("./example/dashboard/my_dashboard.json")
+dashboard.update()
+print("Updated", dashboard)
 ```
 
 To fetch some sample ethereum block data, run the sample script as:

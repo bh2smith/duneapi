@@ -7,8 +7,36 @@ from src.duneapi.types import Network, MetaData, QueryResults, QueryParameter
 
 class TestNetworkEnum(unittest.TestCase):
     def test_string_rep(self):
-        self.assertEqual(str(Network.MAINNET), "Ethereum mainnet")
-        self.assertEqual(str(Network.GCHAIN), "Gnosis chain")
+        self.assertEqual(str(Network.MAINNET), "Ethereum Mainnet")
+        self.assertEqual(str(Network.GCHAIN), "Gnosis Chain")
+        self.assertEqual(str(Network.SOLANA), "Solana")
+        self.assertEqual(str(Network.BINANCE), "Binance Smart Chain")
+        self.assertEqual(str(Network.POLYGON), "Polygon")
+
+    def test_try_from_string(self):
+        # Mainnet
+        self.assertEqual(Network.MAINNET, Network.try_from_string("mainnet"))
+        self.assertEqual(Network.MAINNET, Network.try_from_string("MaInNet"))
+        self.assertEqual(Network.MAINNET, Network.try_from_string("ethereum mainnet"))
+        self.assertEqual(Network.MAINNET, Network.try_from_string("ETHERIUM MaInNet"))
+        self.assertEqual(Network.MAINNET, Network.try_from_string("MaInNet ethereum"))
+
+        # Gnosis Chain
+        self.assertEqual(Network.GCHAIN, Network.try_from_string("gchain"))
+        self.assertEqual(Network.GCHAIN, Network.try_from_string("Gnosis Chain"))
+        self.assertEqual(Network.GCHAIN, Network.try_from_string("GNOChain"))
+
+        # Binance
+        self.assertEqual(Network.BINANCE, Network.try_from_string("bsc"))
+        self.assertEqual(Network.BINANCE, Network.try_from_string("BSC"))
+        self.assertEqual(Network.BINANCE, Network.try_from_string("Binance"))
+
+        # Optimism
+        self.assertEqual(Network.OPTIMISM_V1, Network.try_from_string("optimism v1"))
+        self.assertEqual(Network.OPTIMISM_V2, Network.try_from_string("optimism v2"))
+
+        # No match!
+        self.assertEqual(None, Network.try_from_string("toot"))
 
 
 class TestQueryResults(unittest.TestCase):

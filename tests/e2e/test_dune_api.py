@@ -5,6 +5,23 @@ from src.duneapi.types import Network, QueryParameter, DuneQuery
 
 
 class TestDuneAnalytics(unittest.TestCase):
+    def setUp(self) -> None:
+        self.five = 5
+        self.one = 1
+        self.parameter_name = "IntParameter"
+        self.column_name = "value"
+
+    def network_query(self, network: Network) -> DuneQuery:
+        return DuneQuery.from_environment(
+            # Note that consecutive double brace brackets in formatted strings
+            # become single brace brackets, so this query is
+            # select 5 - '{{IntParameter}}' as value
+            raw_sql=f"select {self.five} - '{{{{{self.parameter_name}}}}}' as {self.column_name}",
+            network=network,
+            parameters=[QueryParameter.number_type(self.parameter_name, self.one)],
+            name="Test Fetch",
+        )
+
     def test_interface(self):
         """
         This test indirectly touches all of
@@ -13,24 +30,16 @@ class TestDuneAnalytics(unittest.TestCase):
         - execute_and_await_results
         - execute_query
         - post_dune_request
+        - Tests that the API works on all supported "Networks"
         essentially all the methods of the API
         """
         dune = DuneAPI.new_from_environment()
-        five, one = 5, 1
-        parameter_name = "IntParameter"
-        column_name = "value"
-        query = DuneQuery.from_environment(
-            # Note that consecutive double brace brackets in formatted strings
-            # become single brace brackets, so this query is
-            # select 5 - '{{IntParameter}}' as value
-            raw_sql=f"select {five} - '{{{{{parameter_name}}}}}' as {column_name}",
-            network=Network.MAINNET,
-            parameters=[QueryParameter.number_type(parameter_name, one)],
-            name="Test Fetch",
-        )
-        res = dune.fetch(query)
-        self.assertEqual(len(res), 1)
-        self.assertEqual(res[0][column_name], five - one)
+        for network in Network:
+            print(f"Testing Network {network}")
+            query = self.network_query(network)
+            res = dune.fetch(query)
+            self.assertEqual(len(res), 1)
+            self.assertEqual(res[0][self.column_name], self.five - self.one)
 
 
 if __name__ == "__main__":

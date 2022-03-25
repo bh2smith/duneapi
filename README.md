@@ -108,3 +108,9 @@ pip install -r requirements.txt
 cp .env.sample .env       <----- Copy your Dune credentials here!
 source .env
 ```
+
+## Deployment
+
+1. Bump the version number in [setup.py](setup.py)
+2. Build the duneapi package `python -m build`
+3. Upload to pypi `twine upload dist/* `

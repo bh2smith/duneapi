@@ -1,1 +1,1 @@
-select count(*) from ethereum."blocks"
+select count(*) from sub_query

@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import json
 
-from src.duneapi.api import DuneAPI
+from .api import DuneAPI
 from .types import DuneQuery, DashboardTile
 
-BASE_URL = "https://dune.xyz/"
+BASE_URL = "https://dune.xyz"
 
 
 class DuneDashboard:
@@ -28,6 +28,7 @@ class DuneDashboard:
 
         self.name = meta["name"]
         self.url = meta["url"]
+        # TODO - validate that query IDs are distinct and files are not appearing twice!
         self.queries = [DuneQuery.from_tile(tile) for tile in tiles]
 
     def update(self) -> None:

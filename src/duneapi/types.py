@@ -242,24 +242,32 @@ class DashboardTile:
     """
 
     name: str
-    file: str
+    select_file: str
     query_id: int
     network: Network
     parameters: list[QueryParameter]
+    base_file: Optional[str]
 
     @classmethod
     def from_dict(cls, obj: dict[str, str]) -> DashboardTile:
         """Constructs Record from Dune Data as string dict"""
         return cls(
             name=obj.get("name", "untitled"),
-            file=obj["file"],
+            select_file=obj["query_file"],
             network=Network.from_string(obj["network"]),
             query_id=int(obj["id"]),
             parameters=[
                 QueryParameter.from_dict(json.loads(p))
                 for p in obj.get("parameters", [])
             ],
+            base_file=obj.get("requires")
         )
+
+    def build_query(self) -> str:
+        if self.base_file is not None:
+            components = map(lambda t: open_query(t), [self.base_file, self.select_file])
+            return "\n".join(list(components))
+        return open_query(self.select_file)
 
 
 @dataclass
@@ -294,7 +302,7 @@ class DuneQuery:
         """Constructs Dune Query from DashboardTile object"""
         return cls(
             name=tile.name,
-            raw_sql=open_query(tile.file),
+            raw_sql=tile.build_query(),
             network=tile.network,
             parameters=tile.parameters,
             query_id=tile.query_id,

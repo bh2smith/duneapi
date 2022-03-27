@@ -32,12 +32,14 @@ class DuneDashboard:
 
     @classmethod
     def from_file(cls, filename: str) -> DuneDashboard:
+        """Constructs Dashboard from configuration file"""
         with open(filename, "r", encoding="utf-8") as config:
             data = json.loads(config.read())
         return cls.from_json(data)
 
     @classmethod
     def from_json(cls, json_obj: dict[str, Any]) -> DuneDashboard:
+        """Constructs Dashboard from json file"""
         meta, queries = json_obj["meta"], json_obj["queries"]
         tiles = [DashboardTile.from_dict(q) for q in queries]
         return cls(name=meta["name"], handle=meta["url"], tiles=tiles)
@@ -57,6 +59,6 @@ class DuneDashboard:
 
 
 if __name__ == "__main__":
-    dashboard = DuneDashboard("./example/dashboard/my_dashboard.json")
+    dashboard = DuneDashboard.from_file("./example/dashboard/my_dashboard.json")
     dashboard.update()
     print("Updated", dashboard)

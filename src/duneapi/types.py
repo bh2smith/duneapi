@@ -264,10 +264,9 @@ class DashboardTile:
         )
 
     def build_query(self) -> str:
+        """Constructs a query from base file and select file attributes"""
         if self.base_file is not None:
-            components = map(
-                lambda t: open_query(t), [self.base_file, self.select_file]
-            )
+            components = map(open_query, [self.base_file, self.select_file])
             return "\n".join(list(components))
         return open_query(self.select_file)
 

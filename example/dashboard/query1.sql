@@ -1,1 +1,2 @@
-select count(*) from sub_query
+select count(*)
+from sub_query

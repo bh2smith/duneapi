@@ -260,12 +260,14 @@ class DashboardTile:
                 QueryParameter.from_dict(json.loads(p))
                 for p in obj.get("parameters", [])
             ],
-            base_file=obj.get("requires")
+            base_file=obj.get("requires"),
         )
 
     def build_query(self) -> str:
         if self.base_file is not None:
-            components = map(lambda t: open_query(t), [self.base_file, self.select_file])
+            components = map(
+                lambda t: open_query(t), [self.base_file, self.select_file]
+            )
             return "\n".join(list(components))
         return open_query(self.select_file)
 

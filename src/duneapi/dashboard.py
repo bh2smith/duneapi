@@ -26,9 +26,12 @@ class DuneDashboard:
             meta, queries = data["meta"], data["queries"]
             tiles = [DashboardTile.from_dict(item) for item in queries]
 
+        # Tile Validation
+        assert len(set(t.query_id for t in tiles)) == len(tiles), "Duplicate query ID"
+        assert len(set(t.select_file for t in tiles)) == len(tiles), "Duplicate query"
+
         self.name = meta["name"]
         self.url = meta["url"]
-        # TODO - validate that query IDs are distinct and files are not appearing twice!
         self.queries = [DuneQuery.from_tile(tile) for tile in tiles]
 
     def update(self) -> None:
@@ -42,7 +45,7 @@ class DuneDashboard:
         names = "\n".join(
             f"  {q.name}: {BASE_URL}/queries/{q.query_id}" for q in self.queries
         )
-        return f'Dashboard "{self.name}": {self.url}\nQueries:\n{names}'
+        return f'Dashboard "{self.name}": {BASE_URL}/{self.url}\nQueries:\n{names}'
 
 
 if __name__ == "__main__":

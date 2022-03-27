@@ -39,6 +39,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(dashboard.url, "https://dune.xyzbh2smith/Demo-Dashboard")
         self.assertEqual(dashboard.queries, expected_queries)
 
+        self.assertEqual(str(dashboard), "PPlop")
+
 
 
 if __name__ == "__main__":

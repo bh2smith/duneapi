@@ -1,14 +1,13 @@
+import json
 import unittest
+
+from src.duneapi.dashboard import DuneDashboard
+from src.duneapi.types import DashboardTile, DuneQuery
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.valid_input = """{
-          "meta": {
-            "name": "Test-Dashboard",
-            "url": "bh2smith/Demo-Dashboard"
-          },
-          "queries": [
+        self.queries = [
             {
               "id": 533353,
               "name": "Example 1",
@@ -23,10 +22,23 @@ class MyTestCase(unittest.TestCase):
               "network": "gchain"
             }
           ]
-        }"""
+        self.valid_input = json.loads(json.dumps({
+          "meta": {
+            "name": "Test-Dashboard",
+            "url": "bh2smith/Demo-Dashboard"
+          },
+          "queries": self.queries
+        }))
 
-    def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
+    def test_constructor(self):
+        dashboard = DuneDashboard.from_json(self.valid_input)
+        expected_tiles = [DashboardTile.from_dict(q) for q in self.queries]
+        expected_queries = [DuneQuery.from_tile(t) for t in expected_tiles]
+
+        self.assertEqual(dashboard.name, "Test-Dashboard")
+        self.assertEqual(dashboard.url, "https://dune.xyzbh2smith/Demo-Dashboard")
+        self.assertEqual(dashboard.queries, expected_queries)
+
 
 
 if __name__ == "__main__":

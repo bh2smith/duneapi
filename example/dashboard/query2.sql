@@ -1,1 +1,1 @@
-select 60 - 90 as val
+select '{{Number}}' as val

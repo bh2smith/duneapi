@@ -208,7 +208,7 @@ class QueryParameter:
         return results
 
     @classmethod
-    def from_dict(cls, obj: dict[str, str]) -> QueryParameter:
+    def from_dict(cls, obj: dict[str, Any]) -> QueryParameter:
         """
         Constructs Query Parameters from json.
         TODO - this could probably be done similar to the __init__ method of MetaData
@@ -218,12 +218,15 @@ class QueryParameter:
             case ParameterType.DATE:
                 return cls.date_type(name, value)
             case ParameterType.TEXT:
+                assert isinstance(value, str)
                 return cls.text_type(name, value)
             case ParameterType.NUMBER:
-                # Not exactly sure if it is best to cast here.
-                # This class has gotten a bt out of hand.
-                return cls.number_type(name, float(value))
+                assert type(value) in {float, int}
+                return cls.number_type(name, value)
         raise ValueError(f"Could not parse Query parameter from {obj}")
+
+    def __str__(self) -> str:
+        return f"QueryParameter(name: {self.key}, value: {self.value}, type: {self.type.value})"
 
 
 @dataclass
@@ -249,17 +252,14 @@ class DashboardTile:
     base_file: Optional[str]
 
     @classmethod
-    def from_dict(cls, obj: dict[str, str]) -> DashboardTile:
+    def from_dict(cls, obj: dict[str, Any]) -> DashboardTile:
         """Constructs Record from Dune Data as string dict"""
         return cls(
             name=obj.get("name", "untitled"),
             select_file=obj["query_file"],
             network=Network.from_string(obj["network"]),
             query_id=int(obj["id"]),
-            parameters=[
-                QueryParameter.from_dict(json.loads(p))
-                for p in obj.get("parameters", [])
-            ],
+            parameters=[QueryParameter.from_dict(p) for p in obj.get("parameters", [])],
             base_file=obj.get("requires"),
         )
 

@@ -20,6 +20,7 @@ class DuneDashboard:
     name: str
     url: str
     queries: list[DuneQuery]
+    api: DuneAPI
 
     def __init__(self, name: str, handle: str, tiles: list[DashboardTile]):
         # Tile Validation
@@ -29,6 +30,7 @@ class DuneDashboard:
         self.name = name
         self.url = BASE_URL + handle
         self.queries = [DuneQuery.from_tile(tile) for tile in tiles]
+        self.api = DuneAPI.new_from_environment()
 
     @classmethod
     def from_file(cls, filename: str) -> DuneDashboard:
@@ -46,10 +48,9 @@ class DuneDashboard:
 
     def update(self) -> None:
         """Creates a dune connection and updates/refreshes all dashboard queries"""
-        api = DuneAPI.new_from_environment()
         for tile in self.queries:
-            api.initiate_query(tile)
-            api.execute_query(tile)
+            self.api.initiate_query(tile)
+            self.api.execute_query(tile)
 
     def __str__(self) -> str:
         names = "\n".join(

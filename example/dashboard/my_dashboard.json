@@ -15,7 +15,14 @@
       "id": 533351,
       "name": "Example 2",
       "query_file": "./example/dashboard/query2.sql",
-      "network": "gchain"
+      "network": "gchain",
+      "parameters": [
+        {
+          "name": "Number",
+          "value": 1337,
+          "type": "number"
+        }
+      ]
     }
   ]
 }

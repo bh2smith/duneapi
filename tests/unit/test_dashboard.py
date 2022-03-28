@@ -1,22 +1,26 @@
 import json
+import os
 import unittest
 
+from src.duneapi.api import DuneAPI
 from src.duneapi.dashboard import DuneDashboard
 from src.duneapi.types import DashboardTile, DuneQuery
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
+        self.user = "TestUser"
+        self.dune = DuneAPI(username=self.user, password="")
         self.queries = [
             {
-                "id": 533353,
+                "id": 1,
                 "name": "Example 1",
                 "query_file": "./example/dashboard/query1.sql",
                 "network": "mainnet",
                 "requires": "./example/dashboard/base_query.sql",
             },
             {
-                "id": 533351,
+                "id": 2,
                 "name": "Example 2",
                 "query_file": "./example/dashboard/query2.sql",
                 "network": "gchain",
@@ -26,8 +30,8 @@ class MyTestCase(unittest.TestCase):
             json.dumps(
                 {
                     "meta": {
-                        "name": "Test-Dashboard",
-                        "url": "bh2smith/Demo-Dashboard",
+                        "name": "Demo-Dashboard",
+                        "user": self.user,
                     },
                     "queries": self.queries,
                 }
@@ -35,13 +39,29 @@ class MyTestCase(unittest.TestCase):
         )
 
     def test_constructor(self):
-        dashboard = DuneDashboard.from_json(self.valid_input)
+        dashboard = DuneDashboard.from_json(self.dune, self.valid_input)
         expected_tiles = [DashboardTile.from_dict(q) for q in self.queries]
         expected_queries = [DuneQuery.from_tile(t) for t in expected_tiles]
 
-        self.assertEqual(dashboard.name, "Test-Dashboard")
-        self.assertEqual(dashboard.url, "https://dune.xyzbh2smith/Demo-Dashboard")
+        self.assertEqual(dashboard.name, "Demo-Dashboard")
+        self.assertEqual(dashboard.url, f"https://dune.xyz/{self.user}/Demo-Dashboard")
         self.assertEqual(dashboard.queries, expected_queries)
+
+    def test_assertions(self):
+        minimal_input = {
+            "meta": {
+                "name": "Demo-Dashboard",
+                "user": "WrongUser",
+            },
+            "queries": [],
+        }
+        # TODO - figure out how to use self.assertLogs
+        with self.assertRaises(ValueError) as err:
+            DuneDashboard.from_json(self.dune, minimal_input)
+        self.assertEqual(
+            str(err.exception),
+            f"Attempt to load dashboard queries for invalid user WrongUser != {self.user}.",
+        )
 
 
 if __name__ == "__main__":

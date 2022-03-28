@@ -72,8 +72,10 @@ class DuneAPI:
             os.environ["DUNE_USER"],
             os.environ["DUNE_PASSWORD"],
         )
+        print(os.environ)
+        # loging and fetch_auth token don't really need to be here
         dune.login()
-        dune.fetch_auth_token()
+
         return dune
 
     def login(self) -> None:
@@ -109,6 +111,7 @@ class DuneAPI:
         if response.status_code == 200:
             self.token = response.json().get("token")
         else:
+            # TODO - should probably raise a different exception here.
             raise SystemExit(response)
 
     def refresh_auth_token(self) -> None:

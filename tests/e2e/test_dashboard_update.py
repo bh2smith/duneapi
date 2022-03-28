@@ -1,11 +1,15 @@
 import unittest
 
+from src.duneapi.api import DuneAPI
 from src.duneapi.dashboard import DuneDashboard
 
 
 class TestDashboard(unittest.TestCase):
     def test_update(self):
-        dashboard = DuneDashboard.from_file("./example/dashboard/my_dashboard.json")
+        dashboard = DuneDashboard.from_file(
+            api=DuneAPI.new_from_environment(),
+            filename="./example/dashboard/my_dashboard.json",
+        )
         dashboard.update()
         query2 = dashboard.queries[1]
         self.assertEqual(dashboard.api.fetch(query2), [{"val": "1337"}])

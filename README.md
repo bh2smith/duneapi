@@ -13,7 +13,7 @@ bdccd5ba543a8f3679e2c81e18cee846af47bc52
 ## Import as Project Dependency
 
 ```shell
-pip install src
+pip install duneapi
 ```
 
 Then you should be able to write python scripts similar to the following:
@@ -78,7 +78,6 @@ print("Updated", dashboard)
 To fetch some sample ethereum block data, run the sample script as:
 
 ```shell
-source .env
 python -m example.sample_fetch
 ```
 
@@ -106,7 +105,6 @@ python3 -m venv venv
 source ./env/bin/activate
 pip install -r requirements.txt
 cp .env.sample .env       <----- Copy your Dune credentials here!
-source .env
 ```
 
 ## Deployment

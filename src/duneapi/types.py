@@ -14,6 +14,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Collection, Optional
 
+from dotenv import load_dotenv
+
 from .util import datetime_parser, open_query, postgres_date
 
 PostData = dict[str, Collection[str]]
@@ -290,6 +292,7 @@ class DuneQuery:
         name: Optional[str] = None,
     ) -> DuneQuery:
         """Constructs a query using the Universal Query ID provided in env file."""
+        load_dotenv()
         return cls(
             raw_sql=raw_sql,
             network=network,

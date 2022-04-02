@@ -10,6 +10,7 @@ import os
 import time
 from typing import Optional
 
+from dotenv import load_dotenv
 from requests import Session, Response
 
 from .response import (
@@ -23,7 +24,6 @@ try:
     logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
 except KeyError:
     pass
-
 
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"
@@ -68,6 +68,7 @@ class DuneAPI:
     @staticmethod
     def new_from_environment() -> DuneAPI:
         """Initialize & authenticate a Dune client from the current environment"""
+        load_dotenv()
         dune = DuneAPI(
             os.environ["DUNE_USER"],
             os.environ["DUNE_PASSWORD"],

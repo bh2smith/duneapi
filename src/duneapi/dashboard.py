@@ -1,7 +1,9 @@
 """Dashboard management class"""
 from __future__ import annotations
 
+import argparse
 import json
+import logging
 import os
 from typing import Any
 
@@ -80,18 +82,24 @@ class DuneDashboard:
             )
             response = api.post_dune_request(post)
             query_data = response.json()["data"]["queries"][0]
-
-            queries.add(
-                DuneQuery(
-                    name=query_data["name"],
-                    raw_sql=query_data["query"],
-                    network=Network(query_data["dataset_id"]),
-                    parameters=[
-                        QueryParameter.from_dict(p) for p in query_data["parameters"]
-                    ],
-                    query_id=query_data["id"],
+            if query_data["user"]["name"] == api.username:
+                queries.add(
+                    DuneQuery(
+                        name=query_data["name"],
+                        raw_sql=query_data["query"],
+                        network=Network(query_data["dataset_id"]),
+                        parameters=[
+                            QueryParameter.from_dict(p)
+                            for p in query_data["parameters"]
+                        ],
+                        query_id=query_data["id"],
+                    )
                 )
-            )
+            else:
+                logging.info(
+                    f'Ignoring dashboard query from user {query_data["user"]["name"]}'
+                )
+
         dashboard_owner = meta["user"]["name"]
         assert dashboard_owner == api.username, "Dashboard not owned by user"
 
@@ -146,7 +154,7 @@ class DuneDashboard:
         """Constructs Dashboard from json file"""
         meta, queries = json_obj["meta"], json_obj["queries"]
         tiles = [DashboardTile.from_dict(q) for q in queries]
-        queries = [DuneQuery.from_tile(tile) for tile in tiles]
+        queries = {DuneQuery.from_tile(tile) for tile in tiles}
         return cls(api=api, name=meta["name"], user=meta["user"], queries=queries)
 
     def update(self) -> None:
@@ -163,10 +171,17 @@ class DuneDashboard:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Fetch Allocation Receipts for a list of accounts"
+    )
+    parser.add_argument(
+        "--dashboard-slug",
+        type=str,
+        help="The hyphenated last part of the dashboard URL",
+    )
+    args = parser.parse_args()
+
     dune = DuneAPI.new_from_environment()
-    dashboard = DuneDashboard.from_dune(dune, "Demo-Dashboard")
-    # dashboard = DuneDashboard.from_file(
-    #     api=dune, filename="./example/dashboard/my_dashboard.json"
-    # )
+    dashboard = DuneDashboard.from_dune(dune, args.dashboard_slug)
     dashboard.update()
     print("Updated", dashboard)

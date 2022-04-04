@@ -7,7 +7,7 @@ import logging
 import os
 from typing import Any
 
-from src.duneapi.constants import FIND_DASHBOARD_POST, FIND_QUERY_POST
+from .constants import FIND_DASHBOARD_POST, FIND_QUERY_POST
 from .api import DuneAPI
 from .types import DuneQuery, DashboardTile, Post, Network, QueryParameter
 
@@ -183,5 +183,4 @@ if __name__ == "__main__":
 
     dune = DuneAPI.new_from_environment()
     dashboard = DuneDashboard.from_dune(dune, args.dashboard_slug)
-    dashboard.update()
     print("Updated", dashboard)

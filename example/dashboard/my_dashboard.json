@@ -18,7 +18,7 @@
       "network": "gchain",
       "parameters": [
         {
-          "name": "Number",
+          "key": "Number",
           "value": 1337,
           "type": "number"
         }

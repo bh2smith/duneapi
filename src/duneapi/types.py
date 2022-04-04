@@ -215,7 +215,7 @@ class QueryParameter:
         Constructs Query Parameters from json.
         TODO - this could probably be done similar to the __init__ method of MetaData
         """
-        name, value = obj["name"], obj["value"]
+        name, value = obj["key"], obj["value"]
         match ParameterType.from_string(obj["type"]):
             case ParameterType.DATE:
                 return cls.date_type(name, value)
@@ -223,7 +223,8 @@ class QueryParameter:
                 assert isinstance(value, str)
                 return cls.text_type(name, value)
             case ParameterType.NUMBER:
-                assert type(value) in {float, int}
+                if isinstance(value, str):
+                    value = float(value) if "." in value else int(value)
                 return cls.number_type(name, value)
         raise ValueError(f"Could not parse Query parameter from {obj}")
 
@@ -282,6 +283,9 @@ class DuneQuery:
     network: Network
     parameters: list[QueryParameter]
     query_id: int
+
+    def __hash__(self) -> int:
+        return hash(self.query_id)
 
     @classmethod
     def from_environment(

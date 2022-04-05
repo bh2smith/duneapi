@@ -1,6 +1,7 @@
 """Utility methods to support Dune API"""
+import collections
 from datetime import datetime
-from typing import Any
+from typing import Any, Hashable
 
 
 def postgres_date(date_str: str) -> datetime:
@@ -25,3 +26,8 @@ def open_query(filepath: str) -> str:
     """Opens `filename` and returns as string"""
     with open(filepath, "r", encoding="utf-8") as query_file:
         return query_file.read()
+
+
+def duplicates(arr: list[Hashable]) -> list[Hashable]:
+    """Detects and returns duplicates in array"""
+    return [item for item, count in collections.Counter(arr).items() if count > 1]

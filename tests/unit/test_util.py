@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from src.duneapi.util import datetime_parser, open_query
+from src.duneapi.util import datetime_parser, open_query, duplicates
 
 
 class TestUtilities(unittest.TestCase):
@@ -26,6 +26,14 @@ class TestUtilities(unittest.TestCase):
     def test_open_query(self):
         query = "select 10 - '{{IntParameter}}' as value"
         self.assertEqual(query, open_query("./tests/queries/test_query.sql"))
+
+    def test_duplicates(self):
+        self.assertEqual(duplicates([1, 2]), [])
+        self.assertEqual(duplicates([1, 2, 2, 4]), [2])
+        self.assertEqual(duplicates([1, 1, 2, 2]), [1, 2])
+
+        with self.assertRaises(TypeError) as err:
+            duplicates([{"x": 1, "y": 2}])
 
 
 if __name__ == "__main__":

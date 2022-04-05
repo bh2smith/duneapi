@@ -7,11 +7,16 @@ import logging
 import os
 from typing import Any
 
+from .util import duplicates
 from .constants import FIND_DASHBOARD_POST, FIND_QUERY_POST
 from .api import DuneAPI
 from .types import DuneQuery, DashboardTile, Post, Network, QueryParameter
 
 BASE_URL = "https://dune.xyz"
+
+
+class DuplicateQueryError(Exception):
+    """Basic extension of Exception class"""
 
 
 class DuneDashboard:
@@ -26,15 +31,20 @@ class DuneDashboard:
     queries: list[DuneQuery]
     api: DuneAPI
 
-    def __init__(self, api: DuneAPI, name: str, user: str, queries: set[DuneQuery]):
+    def __init__(
+        self, api: DuneAPI, name: str, slug: str, user: str, queries: list[DuneQuery]
+    ):
         # Tile Validation
-        assert len(set(q.raw_sql for q in queries)) == len(queries), "Duplicate query"
+        dupes = duplicates([q.raw_sql for q in queries])
+        if dupes:
+            raise DuplicateQueryError(dupes)
         if api.username != user:
             raise ValueError(
                 f"Attempt to load dashboard queries for invalid user {user} != {api.username}."
             )
         self.name = name
-        self.url = "/".join([BASE_URL, user, name])
+        self.slug = slug
+        self.url = "/".join([BASE_URL, user, slug])
         self.queries = list(queries)
         self.api = api
 
@@ -108,12 +118,18 @@ class DuneDashboard:
                 name=meta["name"],
                 owner=dashboard_owner,
                 slug=dashboard_slug,
-                queries=queries,
+                queries=list(queries),
             )
-        return cls(api=api, name=meta["name"], queries=queries, user=dashboard_owner)
+        return cls(
+            api=api,
+            name=meta["name"],
+            slug=dashboard_slug,
+            queries=list(queries),
+            user=dashboard_owner,
+        )
 
     @staticmethod
-    def dump_config(name: str, owner: str, slug: str, queries: set[DuneQuery]) -> None:
+    def dump_config(name: str, owner: str, slug: str, queries: list[DuneQuery]) -> None:
         """
         Writes Dashboard Configuration to files.
         Specifically to ./out/Dashboard-Slug
@@ -142,7 +158,9 @@ class DuneDashboard:
 
             config_dict = {
                 "meta": {
+                    # Dashboards can be renamed but the slug doesn't change.
                     "name": name,
+                    "slug": slug,
                     "user": owner,
                 },
                 "queries": query_dicts,
@@ -153,9 +171,19 @@ class DuneDashboard:
     def from_json(cls, api: DuneAPI, json_obj: dict[str, Any]) -> DuneDashboard:
         """Constructs Dashboard from json file"""
         meta, queries = json_obj["meta"], json_obj["queries"]
+        # TODO - tiles could be phased out of this program.
         tiles = [DashboardTile.from_dict(q) for q in queries]
-        queries = {DuneQuery.from_tile(tile) for tile in tiles}
-        return cls(api=api, name=meta["name"], user=meta["user"], queries=queries)
+        queries = [DuneQuery.from_tile(tile) for tile in tiles]
+        name = meta["name"]
+        return cls(
+            api=api,
+            name=name,
+            # Dashboards can be renamed, but slug is permanent.
+            # So we chose slug with priority and use name otherwise.
+            slug=meta.get("slug", name.replace(" ", "-")),
+            user=meta["user"],
+            queries=queries,
+        )
 
     def update(self) -> None:
         """Creates a dune connection and updates/refreshes all dashboard queries"""

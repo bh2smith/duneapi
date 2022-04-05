@@ -48,6 +48,15 @@ class DuneDashboard:
         self.queries = list(queries)
         self.api = api
 
+    def __eq__(self, other: DuneDashboard) -> bool:
+        equality_conditions = [
+            self.name == other.name,
+            self.slug == other.slug,
+            self.url == other.url,
+            self.queries == other.queries,
+        ]
+        return all(equality_conditions)
+
     @classmethod
     def from_file(cls, api: DuneAPI, filename: str) -> DuneDashboard:
         """Constructs Dashboard from configuration file"""
@@ -96,6 +105,7 @@ class DuneDashboard:
                 queries.add(
                     DuneQuery(
                         name=query_data["name"],
+                        description=query_data["description"],
                         raw_sql=query_data["query"],
                         network=Network(query_data["dataset_id"]),
                         parameters=[
@@ -145,6 +155,7 @@ class DuneDashboard:
                     {
                         "id": query.query_id,
                         "name": query.name,
+                        "description": query.description,
                         "query_file": query_file,
                         "network": str(query.network),
                         "parameters": [

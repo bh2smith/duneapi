@@ -17,6 +17,7 @@ class TestDuneAnalytics(unittest.TestCase):
             # become single brace brackets, so this query is
             # select 5 - '{{IntParameter}}' as value
             raw_sql=f"select {self.five} - '{{{{{self.parameter_name}}}}}' as {self.column_name}",
+            description="Test Description",
             network=network,
             parameters=[QueryParameter.number_type(self.parameter_name, self.one)],
             name="Test Fetch",

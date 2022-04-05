@@ -7,6 +7,7 @@
     {
       "id": 533353,
       "name": "Example 1",
+      "description": "Description of Example 1",
       "query_file": "./example/dashboard/query1.sql",
       "network": "mainnet",
       "requires": "./example/dashboard/base_query.sql"
@@ -14,6 +15,7 @@
     {
       "id": 533351,
       "name": "Example 2",
+      "description": "Description of Example 2",
       "query_file": "./example/dashboard/query2.sql",
       "network": "gchain",
       "parameters": [

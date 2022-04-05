@@ -168,6 +168,15 @@ class QueryParameter:
         self.type: ParameterType = parameter_type
         self.value = value
 
+    def __eq__(self, other: QueryParameter) -> bool:
+        return all(
+            [
+                self.key == other.key,
+                self.value == other.value,
+                self.type.value == other.type.value,
+            ]
+        )
+
     @classmethod
     def text_type(cls, name: str, value: str) -> QueryParameter:
         """Constructs a Query parameter of type text"""
@@ -248,6 +257,7 @@ class DashboardTile:
     """
 
     name: str
+    description: str
     select_file: str
     query_id: int
     network: Network
@@ -259,6 +269,7 @@ class DashboardTile:
         """Constructs Record from Dune Data as string dict"""
         return cls(
             name=obj.get("name", "untitled"),
+            description=obj.get("description", ""),
             select_file=obj["query_file"],
             network=Network.from_string(obj["network"]),
             query_id=int(obj["id"]),
@@ -279,6 +290,7 @@ class DuneQuery:
     """Contains all the relevant data necessary to initiate a Dune Query"""
 
     name: str
+    description: str
     raw_sql: str
     network: Network
     parameters: list[QueryParameter]
@@ -287,10 +299,22 @@ class DuneQuery:
     def __hash__(self) -> int:
         return hash(self.query_id)
 
+    def __eq__(self, other: DuneQuery) -> bool:
+        equality_conditions = [
+            self.name == other.name,
+            self.description == other.description,
+            self.raw_sql == other.raw_sql,
+            self.network.value == other.network.value,
+            self.query_id == other.query_id,
+            self.parameters == other.parameters,
+        ]
+        return all(equality_conditions)
+
     @classmethod
     def from_environment(
         cls,
         raw_sql: str,
+        description: str,
         network: Network,
         parameters: Optional[list[QueryParameter]] = None,
         name: Optional[str] = None,
@@ -299,6 +323,7 @@ class DuneQuery:
         load_dotenv()
         return cls(
             raw_sql=raw_sql,
+            description=description,
             network=network,
             parameters=parameters if parameters is not None else [],
             name=name if name else "untitled",
@@ -310,6 +335,7 @@ class DuneQuery:
         """Constructs Dune Query from DashboardTile object"""
         return cls(
             name=tile.name,
+            description=tile.description,
             raw_sql=tile.build_query(),
             network=tile.network,
             parameters=tile.parameters,
@@ -328,7 +354,7 @@ class DuneQuery:
             "name": self.name,
             "query": self.raw_sql,
             "user_id": 84,
-            "description": "",
+            "description": self.description,
             "is_archived": False,
             "is_temp": False,
             "tags": [],

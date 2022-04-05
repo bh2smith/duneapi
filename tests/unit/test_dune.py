@@ -9,7 +9,12 @@ class TestDuneAnalytics(unittest.TestCase):
     def setUp(self) -> None:
         self.dune = DuneAPI("user", "password")
         self.query = DuneQuery(
-            raw_sql="", network=Network.MAINNET, query_id=0, parameters=[], name="Test"
+            raw_sql="",
+            description="",
+            network=Network.MAINNET,
+            query_id=0,
+            parameters=[],
+            name="Test",
         )
 
     def test_retry(self):

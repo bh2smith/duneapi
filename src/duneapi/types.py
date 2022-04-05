@@ -168,7 +168,9 @@ class QueryParameter:
         self.type: ParameterType = parameter_type
         self.value = value
 
-    def __eq__(self, other: QueryParameter) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, QueryParameter):
+            return NotImplemented
         return all(
             [
                 self.key == other.key,
@@ -299,7 +301,9 @@ class DuneQuery:
     def __hash__(self) -> int:
         return hash(self.query_id)
 
-    def __eq__(self, other: DuneQuery) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DuneQuery):
+            return NotImplemented
         equality_conditions = [
             self.name == other.name,
             self.description == other.description,

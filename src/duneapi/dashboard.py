@@ -48,7 +48,9 @@ class DuneDashboard:
         self.queries = list(queries)
         self.api = api
 
-    def __eq__(self, other: DuneDashboard) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DuneDashboard):
+            return NotImplemented
         equality_conditions = [
             self.name == other.name,
             self.slug == other.slug,

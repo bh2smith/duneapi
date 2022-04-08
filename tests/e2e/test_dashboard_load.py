@@ -8,7 +8,7 @@ class TestDashboard(unittest.TestCase):
     def test_load(self):
         configured_dashboard = DuneDashboard.from_file(
             api=DuneAPI.new_from_environment(),
-            filename="./example/dashboard/my_dashboard.json",
+            filename="./example/dashboard/_config.json",
         )
         configured_dashboard.update()
 

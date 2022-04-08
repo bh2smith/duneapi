@@ -149,7 +149,7 @@ class DuneDashboard:
         out_dir = f"./out/{slug}"
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        with open(f"{out_dir}/config.json", "w", encoding="utf-8") as config_file:
+        with open(f"{out_dir}/_config.json", "w", encoding="utf-8") as config_file:
             query_dicts = []
             for query in queries:
                 query_file = f"{out_dir}/{query.name.lower().replace(' ', '-')}.sql"
@@ -167,7 +167,7 @@ class DuneDashboard:
                     }
                 )
                 with open(query_file, "w", encoding="utf-8") as q_file:
-                    q_file.write(query.raw_sql)
+                    q_file.write(query.raw_sql.strip('\n') + "\n")
 
             config_dict = {
                 "meta": {
@@ -178,7 +178,7 @@ class DuneDashboard:
                 },
                 "queries": query_dicts,
             }
-            config_file.write(json.dumps(config_dict))
+            config_file.write(json.dumps(config_dict).strip('\n') + "\n")
 
     @classmethod
     def from_json(cls, api: DuneAPI, json_obj: dict[str, Any]) -> DuneDashboard:

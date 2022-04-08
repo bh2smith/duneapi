@@ -61,7 +61,7 @@ if __name__ == "__main__":
 #### Dashboard Management
 
 It will help to get aquainted with the Dashboard configuration file found in
-[./example/dashboard/my_dashboard.json](./example/dashboard/my_dashboard.json). This
+[./example/dashboard/my_dashboard.json](./example/dashboard/_config.json). This
 essentially requires filepath and query id to existing dune queries. Generally it is
 expected that you will use the family of queries contained in an existing dashboard, but
 there is no actual validation. Technically one could put all queries here and refresh
@@ -70,7 +70,7 @@ them with this tool.
 ```python
 from duneapi.dashboard import DuneDashboard
 
-dashboard = DuneDashboard("./example/dashboard/my_dashboard.json")
+dashboard = DuneDashboard("./example/dashboard/_config.json")
 dashboard.update()
 print("Updated", dashboard)
 ```
@@ -94,7 +94,7 @@ First record Record(
 ```
 
 To fetch your own data follow the code outline
-in [sample_fetch.py](example/sample_fetch.py)
+in [sample_fetch.py](example/fetch.py)
 
 ## Contributing and Local Development
 

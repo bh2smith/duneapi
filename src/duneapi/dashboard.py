@@ -167,7 +167,7 @@ class DuneDashboard:
                     }
                 )
                 with open(query_file, "w", encoding="utf-8") as q_file:
-                    q_file.write(query.raw_sql.strip('\n') + "\n")
+                    q_file.write(query.raw_sql.strip("\n") + "\n")
 
             config_dict = {
                 "meta": {
@@ -178,7 +178,7 @@ class DuneDashboard:
                 },
                 "queries": query_dicts,
             }
-            config_file.write(json.dumps(config_dict).strip('\n') + "\n")
+            config_file.write(json.dumps(config_dict).strip("\n") + "\n")
 
     @classmethod
     def from_json(cls, api: DuneAPI, json_obj: dict[str, Any]) -> DuneDashboard:

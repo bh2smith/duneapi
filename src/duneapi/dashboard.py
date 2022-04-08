@@ -152,7 +152,7 @@ class DuneDashboard:
         with open(f"{out_dir}/_config.json", "w", encoding="utf-8") as config_file:
             query_dicts = []
             for query in queries:
-                query_file = f"{out_dir}/{query.name.lower().replace(' ', '-')}.sql"
+                query_file = f"{query.name.lower().replace(' ', '-')}.sql"
                 query_dicts.append(
                     {
                         "id": query.query_id,
@@ -175,6 +175,7 @@ class DuneDashboard:
                     "name": name,
                     "slug": slug,
                     "user": owner,
+                    "query_path": out_dir,
                 },
                 "queries": query_dicts,
             }
@@ -185,7 +186,7 @@ class DuneDashboard:
         """Constructs Dashboard from json file"""
         meta, queries = json_obj["meta"], json_obj["queries"]
         # TODO - tiles could be phased out of this program.
-        tiles = [DashboardTile.from_dict(q) for q in queries]
+        tiles = [DashboardTile.from_dict(q, meta["query_path"]) for q in queries]
         queries = [DuneQuery.from_tile(tile) for tile in tiles]
         name = meta["name"]
         return cls(

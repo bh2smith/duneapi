@@ -267,12 +267,12 @@ class DashboardTile:
     base_file: Optional[str]
 
     @classmethod
-    def from_dict(cls, obj: dict[str, Any]) -> DashboardTile:
+    def from_dict(cls, obj: dict[str, Any], path: str) -> DashboardTile:
         """Constructs Record from Dune Data as string dict"""
         return cls(
             name=obj.get("name", "untitled"),
             description=obj.get("description", ""),
-            select_file=obj["query_file"],
+            select_file="/".join([path, obj["query_file"]]),
             network=Network.from_string(obj["network"]),
             query_id=int(obj["id"]),
             parameters=[QueryParameter.from_dict(p) for p in obj.get("parameters", [])],

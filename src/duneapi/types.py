@@ -6,6 +6,7 @@ All operations/routes available for interaction with Dune API - looks like graph
 """
 from __future__ import annotations
 
+import logging
 import re
 import json
 import os
@@ -312,6 +313,7 @@ class DuneQuery:
             self.query_id == other.query_id,
             self.parameters == other.parameters,
         ]
+        logging.debug(f"Equality Conditions: {equality_conditions}")
         return all(equality_conditions)
 
     @classmethod

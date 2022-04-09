@@ -47,7 +47,7 @@ class MyTestCase(unittest.TestCase):
         expected_queries = [DuneQuery.from_tile(t) for t in expected_tiles]
 
         self.assertEqual(dashboard.name, "Demo Dashboard")
-        self.assertEqual(dashboard.url, f"https://dune.xyz/{self.user}/Demo-Dashboard")
+        self.assertEqual(dashboard.url, f"https://dune.xyz/{self.user}/dashboard")
         self.assertEqual(dashboard.queries, expected_queries)
 
     def test_user_assertion(self):

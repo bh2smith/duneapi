@@ -1,28 +1,44 @@
 {
   "meta": {
     "name": "Demo Dashboard",
+    "slug": "Demo-Dashboard",
     "user": "bh2smith",
     "query_path": "./example/dashboard"
   },
   "queries": [
     {
       "id": 533353,
-      "name": "Example 1",
+      "name": "Query1",
       "description": "Description of Example 1",
       "query_file": "query1.sql",
-      "network": "mainnet",
-      "requires": "./example/dashboard/base_query.sql"
+      "network": "Ethereum Mainnet",
+      "requires": "./example/dashboard/base_query.sql",
+      "parameters": []
     },
     {
-      "id": 533351,
-      "name": "Example 2",
-      "description": "Description of Example 2",
+      "id": 585223,
+      "name": "Query2 polygon",
+      "description": "Another Description of Example 2",
       "query_file": "query2.sql",
-      "network": "gchain",
+      "network": "Polygon",
       "parameters": [
         {
           "key": "Number",
-          "value": 1337,
+          "value": 10,
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "id": 533351,
+      "name": "Query2",
+      "description": "Description of Example 2",
+      "query_file": "query2.sql",
+      "network": "Gnosis Chain",
+      "parameters": [
+        {
+          "key": "Number",
+          "value": 10,
           "type": "number"
         }
       ]

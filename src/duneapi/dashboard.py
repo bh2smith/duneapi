@@ -34,10 +34,10 @@ class DuneDashboard:
     def __init__(
         self, api: DuneAPI, name: str, slug: str, user: str, queries: list[DuneQuery]
     ):
-        # Tile Validation
-        dupes = duplicates([q.raw_sql for q in queries])
+        dupes = duplicates([(q.raw_sql, q.network) for q in queries])
         if dupes:
-            raise DuplicateQueryError(dupes)
+            logging.warning(f"Duplicate Queries Detected {dupes}")
+
         if api.username != user:
             raise ValueError(
                 f"Attempt to load dashboard queries for invalid user {user} != {api.username}."
@@ -57,6 +57,7 @@ class DuneDashboard:
             self.url == other.url,
             self.queries == other.queries,
         ]
+        logging.info(f"Equality conditions: {equality_conditions}")
         return all(equality_conditions)
 
     @classmethod
@@ -82,7 +83,7 @@ class DuneDashboard:
             },
             "query": FIND_DASHBOARD_POST,
         }
-
+        print(dashboard_slug)
         response = api.post_dune_request(
             Post(data=post_data, key_map={"dashboards": {"visualization_widgets"}})
         )
@@ -103,6 +104,7 @@ class DuneDashboard:
             )
             response = api.post_dune_request(post)
             query_data = response.json()["data"]["queries"][0]
+            # Filtering out queries that are not owned by logged-in user.
             if query_data["user"]["name"] == api.username:
                 queries.add(
                     DuneQuery(
@@ -149,25 +151,33 @@ class DuneDashboard:
         out_dir = f"./out/{slug}"
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
+        queries_seen = {}
         with open(f"{out_dir}/_config.json", "w", encoding="utf-8") as config_file:
             query_dicts = []
             for query in queries:
                 query_file = f"{query.name.lower().replace(' ', '-')}.sql"
-                query_dicts.append(
-                    {
-                        "id": query.query_id,
-                        "name": query.name,
-                        "description": query.description,
-                        "query_file": query_file,
-                        "network": str(query.network),
-                        "parameters": [
-                            {"key": p.key, "value": p.value, "type": p.type.value}
-                            for p in query.parameters
-                        ],
-                    }
-                )
-                with open(query_file, "w", encoding="utf-8") as q_file:
-                    q_file.write(query.raw_sql.strip("\n") + "\n")
+                query_config = {
+                    "id": query.query_id,
+                    "name": query.name,
+                    "description": query.description,
+                    "query_file": query_file,
+                    "network": str(query.network),
+                    "parameters": [
+                        {"key": p.key, "value": p.value, "type": p.type.value}
+                        for p in query.parameters
+                    ],
+                }
+                query_dicts.append(query_config)
+
+                if query.raw_sql not in queries_seen:
+                    # Whenever we encounter a new SQL query, write to file
+                    query_path = f"{out_dir}/{query_file}"
+                    with open(query_path, "w", encoding="utf-8") as q_file:
+                        q_file.write(query.raw_sql.strip("\n") + "\n")
+                    queries_seen[query.raw_sql] = query_file
+                else:
+                    # If already seen use the already existing file.
+                    query_config["query_file"] = queries_seen[query.raw_sql]
 
             config_dict = {
                 "meta": {
@@ -179,7 +189,7 @@ class DuneDashboard:
                 },
                 "queries": query_dicts,
             }
-            config_file.write(json.dumps(config_dict).strip("\n") + "\n")
+            config_file.write(json.dumps(config_dict, indent=2).strip("\n") + "\n")
 
     @classmethod
     def from_json(cls, api: DuneAPI, json_obj: dict[str, Any]) -> DuneDashboard:

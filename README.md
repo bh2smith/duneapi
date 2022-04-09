@@ -78,7 +78,7 @@ print("Updated", dashboard)
 To fetch some sample ethereum block data, run the sample script as:
 
 ```shell
-python -m example.sample_fetch
+python -m example.fetch
 ```
 
 This will result in the following console logs:
@@ -94,7 +94,7 @@ First record Record(
 ```
 
 To fetch your own data follow the code outline
-in [sample_fetch.py](example/fetch.py)
+in [fetch.py](example/fetch.py)
 
 ## Contributing and Local Development
 

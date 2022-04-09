@@ -80,7 +80,7 @@ class MyTestCase(unittest.TestCase):
                     "id": 1,
                     "name": "Example 1",
                     "query_file": query_file,
-                    "network": "mainnet",
+                    "network": "gchain",
                 },
                 {
                     "id": 2,
@@ -94,7 +94,8 @@ class MyTestCase(unittest.TestCase):
         with self.assertRaises(DuplicateQueryError) as err:
             DuneDashboard.from_json(self.dune, minimal_input)
         self.assertEqual(
-            str(err.exception), "[\"select 10 - '{{IntParameter}}' as value\"]"
+            str(err.exception),
+            "[(\"select 10 - '{{IntParameter}}' as value\", <Network.GCHAIN: 6>)]",
         )
 
 

@@ -30,4 +30,5 @@ def open_query(filepath: str) -> str:
 
 def duplicates(arr: list[Hashable]) -> list[Hashable]:
     """Detects and returns duplicates in array"""
+    print(collections.Counter(arr))
     return [item for item, count in collections.Counter(arr).items() if count > 1]

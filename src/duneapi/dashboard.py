@@ -36,7 +36,7 @@ class DuneDashboard:
     ):
         dupes = duplicates([(q.raw_sql, q.network) for q in queries])
         if dupes:
-            raise DuplicateQueryError(f"Duplicate Queries Detected {dupes}")
+            raise DuplicateQueryError(dupes)
 
         if api.username != user:
             raise ValueError(

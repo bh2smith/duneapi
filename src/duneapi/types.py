@@ -246,10 +246,12 @@ class QueryParameter:
         raise ValueError(f"Could not parse Query parameter from {obj}")
 
     def __str__(self) -> str:
-        return f"QueryParameter(" \
-               f"name: {self.key}, " \
-               f"value: {self.value}, " \
-               f"type: {self.type.value})"
+        return (
+            f"QueryParameter("
+            f"name: {self.key}, "
+            f"value: {self.value}, "
+            f"type: {self.type.value})"
+        )
 
 
 @dataclass

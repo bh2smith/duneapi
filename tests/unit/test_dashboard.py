@@ -2,7 +2,7 @@ import json
 import unittest
 
 from src.duneapi.api import DuneAPI
-from src.duneapi.dashboard import DuneDashboard, DuplicateQueryError
+from src.duneapi.dashboard import DuneDashboard
 from src.duneapi.types import DashboardTile, DuneQuery
 
 
@@ -91,11 +91,13 @@ class MyTestCase(unittest.TestCase):
             ],
         }
 
-        with self.assertRaises(DuplicateQueryError) as err:
+        with self.assertLogs("src.duneapi.dashboard", level="WARN") as cm:
             DuneDashboard.from_json(self.dune, minimal_input)
         self.assertEqual(
-            str(err.exception),
-            "[(\"select 10 - '{{IntParameter}}' as value\", <Network.GCHAIN: 6>)]",
+            cm.output,
+            [
+                "WARNING:src.duneapi.dashboard:Duplicate Query Detected [(\"select 10 - '{{IntParameter}}' as value\", <Network.GCHAIN: 6>)]"
+            ],
         )
 
 

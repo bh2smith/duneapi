@@ -5,7 +5,6 @@ at commit bdccd5ba543a8f3679e2c81e18cee846af47bc52
 """
 from __future__ import annotations
 
-import logging.config
 import os
 import time
 from typing import Optional
@@ -13,17 +12,14 @@ from typing import Optional
 from dotenv import load_dotenv
 from requests import Session, Response
 
+from .logger import set_log
 from .response import (
     validate_and_parse_dict_response,
     validate_and_parse_list_response,
 )
 from .types import DuneRecord, QueryResults, DuneQuery, Post
 
-log = logging.getLogger(__name__)
-try:
-    logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=True)
-except KeyError:
-    pass
+log = set_log(__name__)
 
 BASE_URL = "https://dune.xyz"
 GRAPH_URL = "https://core-hsr.dune.xyz/v1/graphql"

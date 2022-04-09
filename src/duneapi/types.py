@@ -6,10 +6,9 @@ All operations/routes available for interaction with Dune API - looks like graph
 """
 from __future__ import annotations
 
-import logging
-import re
 import json
 import os
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -17,7 +16,10 @@ from typing import Any, Collection, Optional
 
 from dotenv import load_dotenv
 
+from .logger import set_log
 from .util import datetime_parser, open_query, postgres_date
+
+log = set_log(__name__)
 
 PostData = dict[str, Collection[str]]
 # key_map = {"outer1": {"inner11", "inner12}, "outer2": {"inner21"}}
@@ -313,7 +315,7 @@ class DuneQuery:
             self.query_id == other.query_id,
             self.parameters == other.parameters,
         ]
-        logging.debug(f"Equality Conditions: {equality_conditions}")
+        log.debug(f"Equality Conditions: {equality_conditions}")
         return all(equality_conditions)
 
     @classmethod

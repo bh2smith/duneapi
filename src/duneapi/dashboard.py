@@ -3,16 +3,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
 import os
 from typing import Any
 
-from .util import duplicates
-from .constants import FIND_DASHBOARD_POST, FIND_QUERY_POST
 from .api import DuneAPI
+from .constants import FIND_DASHBOARD_POST, FIND_QUERY_POST
+from .logger import set_log
 from .types import DuneQuery, DashboardTile, Post, Network, QueryParameter
+from .util import duplicates
 
 BASE_URL = "https://dune.xyz"
+log = set_log(__name__)
 
 
 class DuplicateQueryError(Exception):
@@ -36,7 +37,8 @@ class DuneDashboard:
     ):
         dupes = duplicates([(q.raw_sql, q.network) for q in queries])
         if dupes:
-            raise DuplicateQueryError(dupes)
+            log.warning(f"Duplicate Query Detected {dupes}")
+            # raise DuplicateQueryError(dupes)
 
         if api.username != user:
             raise ValueError(
@@ -57,7 +59,7 @@ class DuneDashboard:
             self.url == other.url,
             self.queries == other.queries,
         ]
-        logging.info(f"Equality conditions: {equality_conditions}")
+        log.debug(f"Equality conditions: {equality_conditions}")
         return all(equality_conditions)
 
     @classmethod
@@ -120,7 +122,7 @@ class DuneDashboard:
                     )
                 )
             else:
-                logging.info(
+                log.info(
                     f'Ignoring dashboard query from user {query_data["user"]["name"]}'
                 )
 

@@ -36,7 +36,6 @@ class TestDuneAnalytics(unittest.TestCase):
         """
         dune = DuneAPI.new_from_environment()
         for network in Network:
-            print(f"Testing Network {network}")
             query = self.network_query(network)
             res = dune.fetch(query)
             self.assertEqual(len(res), 1)

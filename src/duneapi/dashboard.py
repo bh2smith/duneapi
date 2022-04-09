@@ -85,7 +85,6 @@ class DuneDashboard:
             },
             "query": FIND_DASHBOARD_POST,
         }
-        print(dashboard_slug)
         response = api.post_dune_request(
             Post(data=post_data, key_map={"dashboards": {"visualization_widgets"}})
         )

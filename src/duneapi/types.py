@@ -45,7 +45,10 @@ class MetaData:
 
     def __init__(self, obj: str):
         """
+        Constructor method
         :param obj: input should have the following form
+
+        Example input:
         {
             'id': '3158cc2c-5ed1-4779-b523-eeb9c3b34b21',
             'job_id': '093e440d-66ce-4c00-81ec-2406f0403bc0',
@@ -243,7 +246,10 @@ class QueryParameter:
         raise ValueError(f"Could not parse Query parameter from {obj}")
 
     def __str__(self) -> str:
-        return f"QueryParameter(name: {self.key}, value: {self.value}, type: {self.type.value})"
+        return f"QueryParameter(" \
+               f"name: {self.key}, " \
+               f"value: {self.value}, " \
+               f"type: {self.type.value})"
 
 
 @dataclass

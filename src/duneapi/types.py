@@ -330,8 +330,8 @@ class DuneQuery:
     def from_environment(
         cls,
         raw_sql: str,
-        description: str,
         network: Network,
+        description: str = "",
         parameters: Optional[list[QueryParameter]] = None,
         name: Optional[str] = None,
     ) -> DuneQuery:

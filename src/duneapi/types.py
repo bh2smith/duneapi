@@ -390,7 +390,7 @@ class DuneQuery:
                 "name",
                 "description",
                 "query",
-                "private_to_group_id",
+                "is_private",
                 "is_temp",
                 "is_archived",
                 "created_at",
@@ -456,7 +456,7 @@ class DuneQuery:
                   name
                   description
                   query
-                  private_to_group_id
+                  is_private
                   is_temp
                   is_archived
                   created_at

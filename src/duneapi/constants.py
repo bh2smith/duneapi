@@ -16,7 +16,7 @@ FIND_DASHBOARD_POST = """
       id
       name
       slug
-      private_to_group_id
+      is_private
       is_archived
       created_at
       updated_at
@@ -117,7 +117,7 @@ FIND_QUERY_POST = """
       name
       description
       query
-      private_to_group_id
+      is_private
       is_temp
       is_archived
       created_at

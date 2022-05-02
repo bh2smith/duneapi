@@ -34,8 +34,7 @@ need to have a unique id for each query.
 
 ```python
 from duneapi.api import DuneAPI
-from duneapi.query import DuneQuery
-from duneapi.types import Network, QueryParameter, DuneRecord
+from duneapi.types import Network, QueryParameter, DuneRecord, DuneQuery
 from duneapi.util import open_query
 
 

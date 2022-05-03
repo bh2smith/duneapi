@@ -3,10 +3,12 @@ import collections
 from datetime import datetime
 from typing import Any, Hashable
 
+DUNE_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 def postgres_date(date_str: str) -> datetime:
     """Parse a postgres compatible date string into datetime object"""
-    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S+00:00")
+    return datetime.strptime(date_str, DUNE_DATE_FORMAT)
 
 
 def datetime_parser(dct: dict[str, Any]) -> dict[str, Any]:
@@ -16,7 +18,7 @@ def datetime_parser(dct: dict[str, Any]) -> dict[str, Any]:
     for key, val in dct.items():
         if isinstance(val, str):
             try:
-                dct[key] = datetime.strptime(val, "%Y-%m-%dT%H:%M:%S+00:00")
+                dct[key] = datetime.strptime(val, DUNE_DATE_FORMAT)
             except ValueError:
                 pass
     return dct

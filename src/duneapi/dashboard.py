@@ -190,7 +190,9 @@ class DuneDashboard:
                 },
                 "queries": query_dicts,
             }
-            config_file.write(json.dumps(config_dict, indent=2).strip("\n") + "\n")
+            config_file.write(
+                json.dumps(config_dict, indent=2, default=str).strip("\n") + "\n"
+            )
 
     @classmethod
     def from_json(cls, api: DuneAPI, json_obj: dict[str, Any]) -> DuneDashboard:

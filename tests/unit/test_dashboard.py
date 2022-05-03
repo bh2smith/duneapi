@@ -22,8 +22,8 @@ class MyTestCase(unittest.TestCase):
             {
                 "id": 2,
                 "name": "Example 2",
-                "query_file": "query2.sql",
-                "network": "gchain",
+                "query_file": "query2-polygon.sql",
+                "network": "polygon",
             },
         ]
         self.valid_input = json.loads(

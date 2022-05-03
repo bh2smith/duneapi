@@ -16,9 +16,7 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(
             datetime_parser(with_date),
             {
-                "valid_date": datetime.strptime(
-                    valid_date_str, DUNE_DATE_FORMAT
-                ),
+                "valid_date": datetime.strptime(valid_date_str, DUNE_DATE_FORMAT),
                 "invalid_date": invalid_date_str,
             },
         )

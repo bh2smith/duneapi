@@ -1,0 +1,1 @@
+select '{{Number}}' as val

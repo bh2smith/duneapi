@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from src.duneapi.util import datetime_parser, open_query, duplicates
+from src.duneapi.util import datetime_parser, open_query, duplicates, DUNE_DATE_FORMAT
 
 
 class TestUtilities(unittest.TestCase):
@@ -10,14 +10,14 @@ class TestUtilities(unittest.TestCase):
         no_dates = {"a": 1, "b": "hello", "c": [None, 3.14]}
         self.assertEqual(datetime_parser(no_dates), no_dates)
 
-        valid_date_str = "1985-03-10T05:00:00+00:00"
+        valid_date_str = "1985-03-10 05:00:00"
         invalid_date_str = "1985/03/10 - literally anything else"
         with_date = {"valid_date": valid_date_str, "invalid_date": invalid_date_str}
         self.assertEqual(
             datetime_parser(with_date),
             {
                 "valid_date": datetime.strptime(
-                    valid_date_str, "%Y-%m-%dT%H:%M:%S+00:00"
+                    valid_date_str, DUNE_DATE_FORMAT
                 ),
                 "invalid_date": invalid_date_str,
             },

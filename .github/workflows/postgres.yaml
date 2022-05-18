@@ -12,7 +12,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: bh2smith/testdb
+        image: bh2smith/testdb:v0
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres

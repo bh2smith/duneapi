@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Optional
 
 from dotenv import load_dotenv
 from requests import Session, Response

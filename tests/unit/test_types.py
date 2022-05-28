@@ -54,7 +54,8 @@ class TestQueryResults(unittest.TestCase):
         }
         self.valid_empty_results = {
             "query_results": [self.metadata_content],
-            "get_result_by_result_id": [],
+            "get_result_by_job_id": [],
+            "query_errors": [],
         }
 
     def test_metadata_constructor(self):
@@ -72,13 +73,14 @@ class TestQueryResults(unittest.TestCase):
 
         invalid_query_results = {
             "query_results": [self.metadata_content, {}],  # Not of list type!
-            "get_result_by_result_id": [],
+            "get_result_by_job_id": [],
+            "query_errors": []
         }
         with self.assertRaises(AssertionError) as err:
             QueryResults(invalid_query_results)
         self.assertEqual(
             str(err.exception),
-            f"Unexpected query_results {invalid_query_results['query_results']}",
+            f"Unexpected query_results {invalid_query_results}",
         )
 
 

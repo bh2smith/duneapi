@@ -114,43 +114,39 @@ class DuneAPI:
         self.fetch_auth_token()
         self.session.headers.update({"authorization": f"Bearer {self.token}"})
 
-    def initiate_query(self, query: DuneQuery) -> None:
+    def initiate_query(self, query: DuneQuery) -> bool:
         """
         Initiates a new query.
-        If no exception is raised, post was success!
         """
-        post_data = query.initiate_query_post()
+        post_data = query.upsert_query_post()
         response = self.post_dune_request(post_data)
         validate_and_parse_dict_response(response, post_data.key_map)
+        # Return True to indicate method was success.
+        return True
 
-    def execute_query(self, query: DuneQuery) -> None:
+    def execute_query(self, query: DuneQuery) -> str:
         """Executes query at query_id"""
         post_data = query.execute_query_post()
         response = self.post_dune_request(post_data)
         validate_and_parse_dict_response(response, post_data.key_map)
+        return str(response.json()["data"]["execute_query"]["job_id"])
 
-    def query_result_id(self, query: DuneQuery) -> Optional[str]:
-        """
-        Fetch the query result id for a query
-        :return: string representation of integer result id
-        """
-        post_data = query.get_result_post()
-        response = self.post_dune_request(post_data)
-        response_data = validate_and_parse_dict_response(response, post_data.key_map)
-
-        return response_data["get_result"].get("result_id", None)
-
-    def get_results(self, query: DuneQuery) -> list[DuneRecord]:
+    def get_results(self, job_id: str) -> list[DuneRecord]:
         """Fetch the result for a query by id"""
-        result_id = self.query_result_id(query)
-        while not result_id:
+        queue_position_post = DuneQuery.get_queue_position(job_id)
+
+        queue_position = self.post_dune_request(queue_position_post)
+        while queue_position.json()["data"]["jobs_by_pk"] is not None:
+            log.debug("Waiting for queue to end...")
             time.sleep(self.ping_frequency)
-            log.debug("Awaiting results... ")
-            result_id = self.query_result_id(query)
-        post_data = DuneQuery.find_result_post(result_id)
-        response = self.post_dune_request(post_data)
-        response_data = validate_and_parse_list_response(response, post_data.key_map)
-        return QueryResults(response_data).data
+            queue_position = self.post_dune_request(queue_position_post)
+
+        find_result_post = DuneQuery.find_result_by_job(job_id)
+        response = self.post_dune_request(find_result_post)
+        parsed_response = validate_and_parse_list_response(
+            response, find_result_post.key_map
+        )
+        return QueryResults(parsed_response).data
 
     def post_dune_request(self, post: Post) -> Response:
         """
@@ -161,7 +157,9 @@ class DuneAPI:
         :return: response in json format
         """
         self.refresh_auth_token()
+        log.debug(f"Posting Dune Request {post.data}")
         response = self.session.post(GRAPH_URL, json=post.data)
+        log.debug(f"Received Response {response.json()}")
 
         return response
 
@@ -170,8 +168,8 @@ class DuneAPI:
         Executes query by ID and awaits completion.
         :return: parsed list of dict records returned from query
         """
-        self.execute_query(query)
-        data_set = self.get_results(query)
+        job_id = self.execute_query(query)
+        data_set = self.get_results(job_id)
         log.info(f"got {len(data_set)} records from last query")
         return data_set
 

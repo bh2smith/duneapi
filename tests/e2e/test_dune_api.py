@@ -10,6 +10,8 @@ class TestDuneAnalytics(unittest.TestCase):
         self.one = 1
         self.parameter_name = "IntParameter"
         self.column_name = "value"
+        self.dune = DuneAPI.new_from_environment()
+        self.mainnet_query = self.network_query(Network.MAINNET)
 
     def network_query(self, network: Network) -> DuneQuery:
         return DuneQuery.from_environment(
@@ -22,6 +24,12 @@ class TestDuneAnalytics(unittest.TestCase):
             parameters=[QueryParameter.number_type(self.parameter_name, self.one)],
             name="Test Fetch",
         )
+
+    def test_initiate_query(self):
+        self.assertEqual(True, self.dune.initiate_query(self.mainnet_query))
+
+    def test_execute_query(self):
+        self.assertNotEqual(None, self.dune.execute_query(self.mainnet_query))
 
     def test_interface(self):
         """

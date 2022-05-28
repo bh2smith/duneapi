@@ -71,16 +71,15 @@ class QueryResults:
     def __init__(self, data: ListInnerResponse):
         assert data.keys() == {
             "query_results",
-            "get_result_by_result_id",
+            "get_result_by_job_id",
+            "query_errors",
         }, f"invalid keys {data.keys()}"
-        assert (
-            len(data["query_results"]) == 1
-        ), f"Unexpected query_results {data['query_results']}"
+        assert len(data["query_results"]) == 1, f"Unexpected query_results {data}"
         # Could wrap meta conversion into a try-catch, since we don't really need it.
         # But, I can't think of a broad enough exception that won't trip up the liner.
         self.meta = MetaData(json.dumps(data["query_results"][0]))
 
-        self.data = [rec["data"] for rec in data["get_result_by_result_id"]]
+        self.data = [rec["data"] for rec in data["get_result_by_job_id"]]
 
 
 class Network(Enum):
@@ -361,7 +360,7 @@ class DuneQuery:
     def _request_parameters(self) -> list[dict[str, str]]:
         return [p.to_dict() for p in self.parameters]
 
-    def initiate_query_post(self) -> Post:
+    def upsert_query_post(self) -> Post:
         """Returns json data for a post of type UpsertQuery"""
         object_data: dict[str, Any] = {
             "id": self.query_id,
@@ -513,59 +512,84 @@ class DuneQuery:
         )
 
     @staticmethod
-    def find_result_post(result_id: str) -> Post:
+    def find_result_by_job(job_id: str) -> Post:
         """Returns json data for a post of type FindResultDataByResult"""
         query = """
-        query FindResultDataByResult($result_id: uuid!) {
-          query_results(where: { id: { _eq: $result_id } }) {
+        query FindResultDataByJob($job_id: uuid!) {
+          query_results(where: {job_id: {_eq: $job_id}, error: {_is_null: true}}) {
             id
             job_id
-            error
             runtime
             generated_at
             columns
           }
-          get_result_by_result_id(args: { want_result_id: $result_id }) {
+          query_errors(where: {job_id: {_eq: $job_id}}) {
+            id
+            job_id
+            runtime
+            message
+            metadata
+            type
+            generated_at
+          }
+          get_result_by_job_id(args: {want_job_id: $job_id}) {
             data
           }
         }
         """
         return Post(
             data={
-                "operationName": "FindResultDataByResult",
-                "variables": {"result_id": result_id},
+                "operationName": "FindResultDataByJob",
+                "variables": {"job_id": job_id},
                 "query": query,
             },
             key_map={
                 "query_results": {
                     "id",
                     "job_id",
-                    "error",
                     "runtime",
                     "generated_at",
                     "columns",
                 },
-                "get_result_by_result_id": {"data"},
+                "query_errors": {
+                    "id",
+                    "job_id",
+                    "runtime",
+                    "message",
+                    "metadata",
+                    "type",
+                    "generated_at",
+                },
+                "get_result_by_job_id": {"data"},
             },
         )
 
-    def get_result_post(self) -> Post:
-        """Returns json data for a post of type GetResult"""
+    @staticmethod
+    def get_queue_position(job_id: str) -> Post:
+        """Returns json data for a post of type GetQueuePosition
+        This is meant to determine when query execution has completed.
+        """
         query = """
-        query GetResult($query_id: Int!, $parameters: [Parameter!]) {
-          get_result(query_id: $query_id, parameters: $parameters) {
-            job_id
-            result_id
+        query GetQueuePosition($job_id: uuid!) {
+          view_queue_positions(where: {id: {_eq: $job_id}}) {
+            pos
+          }
+          jobs_by_pk(id: $job_id) {
+            id
+            user_id
+            category
+            created_at
+            locked_until
           }
         }
         """
         return Post(
             data={
-                "operationName": "GetResult",
-                "variables": {"query_id": self.query_id},
+                "operationName": "GetQueuePosition",
+                "variables": {"job_id": job_id},
                 "query": query,
             },
-            key_map={"get_result": {"job_id", "result_id"}},
+            key_map={"data": {"view_queue_positions", "jobs_by_pk"}},
         )
 
     def execute_query_post(self) -> Post:
@@ -580,7 +604,10 @@ class DuneQuery:
         return Post(
             data={
                 "operationName": "ExecuteQuery",
-                "variables": {"query_id": self.query_id, "parameters": []},
+                "variables": {
+                    "query_id": self.query_id,
+                    "parameters": [p.to_dict() for p in self.parameters],
+                },
                 "query": query,
             },
             key_map={"execute_query": {"job_id"}},

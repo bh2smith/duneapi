@@ -16,10 +16,12 @@ def pre_validate_response(response: Response, key_map: KeyMap) -> dict[str, Any]
         raise SystemExit("Dune post failed with", response)
 
     response_json = response.json()
-    if "errors" in response_json:
-        raise RuntimeError(f"Dune API Request failed with {response_json}")
     if "data" not in response_json.keys():
         raise ValueError(f"response json {response_json} missing 'data' key")
+
+    query_errors = response_json["data"].get("query_errors")
+    if query_errors:
+        raise RuntimeError(f"Dune API Request failed with errors {query_errors}")
 
     response_data: dict[str, Any] = response_json["data"]
 

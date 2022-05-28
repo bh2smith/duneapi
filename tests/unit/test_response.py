@@ -42,9 +42,7 @@ class TestOperations(unittest.TestCase):
         self.response.json = MagicMock(return_value={"data": {"query_errors": 5}})
         with self.assertRaises(RuntimeError) as err:
             pre_validate_response(self.response, {"x": {"y"}})
-        self.assertEqual(
-            str(err.exception), "Dune API Request failed with errors 5"
-        )
+        self.assertEqual(str(err.exception), "Dune API Request failed with errors 5")
 
         self.response.json = MagicMock(return_value=self.valid_dict_data)
         with self.assertRaises(AssertionError) as err:

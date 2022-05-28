@@ -74,7 +74,7 @@ class TestQueryResults(unittest.TestCase):
         invalid_query_results = {
             "query_results": [self.metadata_content, {}],  # Not of list type!
             "get_result_by_job_id": [],
-            "query_errors": []
+            "query_errors": [],
         }
         with self.assertRaises(AssertionError) as err:
             QueryResults(invalid_query_results)

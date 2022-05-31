@@ -30,9 +30,26 @@ jobs:
       - name: Setup Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: Install Requirements
         run: pip install -r requirements.txt
+
+      - name: Install local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo apt-get update
+          sudo apt-get -yqq install postgresql postgresql-contrib
+
+      - name: Boot local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo service postgresql start
+
+      - name: Configure local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
+
       - name: Connect to PostgreSQL
         # Runs a script that creates a PostgreSQL table, populates
         # the table with data, and then retrieves the data.

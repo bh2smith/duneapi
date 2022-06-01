@@ -7,8 +7,8 @@ FIND_DASHBOARD_POST = """
       dashboards(where: {slug: {_eq: $slug}, user: {name: {_eq: $user}}}) {
         ...Dashboard
         favorite_dashboards(where: {user_id: {_eq: $session_id}}, limit: 1) {
-          created_at      __typename    
-          }    __typename  
+          created_at      
+          }  
       }
     }
     
@@ -22,21 +22,21 @@ FIND_DASHBOARD_POST = """
       updated_at
       tags
       user {
-      ...User    __typename  
+      ...User 
       }
     forked_dashboard {    
         slug    
         name    
         user {      
-            name      __typename    
-        }    __typename  
+            name      
+        }  
     }
       text_widgets {
         id
         created_at
         updated_at
         text
-        options    __typename  
+        options  
       }
       visualization_widgets {
         id
@@ -44,8 +44,8 @@ FIND_DASHBOARD_POST = """
         updated_at
         options
         visualization {
-          ...Visualization      __typename    
-        }    __typename  
+          ...Visualization      
+        }  
       }
       param_widgets {
         id
@@ -55,22 +55,22 @@ FIND_DASHBOARD_POST = """
         dashboard_id
         options
         created_at
-        updated_at    __typename  
+        updated_at  
       }
       dashboard_favorite_count_all {
-        favorite_count    __typename  
+        favorite_count  
       }
       trending_scores {
         score_1h
         score_4h
         score_24h
-        updated_at    __typename  
-        }  __typename
+        updated_at  
+        }
       }
     fragment User on users {
       id
       name
-      profile_image_url  __typename
+      profile_image_url
       }
     fragment Visualization on visualizations {
       id
@@ -87,9 +87,9 @@ FIND_DASHBOARD_POST = """
         user {
             id
             name
-            profile_image_url      __typename    
-        }    __typename  
-      }  __typename
+            profile_image_url      
+        }  
+      }
     }
 """
 

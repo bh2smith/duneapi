@@ -7,8 +7,8 @@ FIND_DASHBOARD_POST = """
       dashboards(where: {slug: {_eq: $slug}, user: {name: {_eq: $user}}}) {
         ...Dashboard
         favorite_dashboards(where: {user_id: {_eq: $session_id}}, limit: 1) {
-          created_at
-        }
+          created_at      __typename    
+          }    __typename  
       }
     }
     
@@ -22,14 +22,21 @@ FIND_DASHBOARD_POST = """
       updated_at
       tags
       user {
-        ...User
+      ...User    __typename  
       }
+    forked_dashboard {    
+        slug    
+        name    
+        user {      
+            name      __typename    
+        }    __typename  
+    }
       text_widgets {
         id
         created_at
         updated_at
         text
-        options
+        options    __typename  
       }
       visualization_widgets {
         id
@@ -37,8 +44,8 @@ FIND_DASHBOARD_POST = """
         updated_at
         options
         visualization {
-          ...Visualization
-        }
+          ...Visualization      __typename    
+        }    __typename  
       }
       param_widgets {
         id
@@ -48,25 +55,23 @@ FIND_DASHBOARD_POST = """
         dashboard_id
         options
         created_at
-        updated_at
+        updated_at    __typename  
       }
       dashboard_favorite_count_all {
-        favorite_count
+        favorite_count    __typename  
       }
       trending_scores {
         score_1h
         score_4h
         score_24h
-        updated_at
+        updated_at    __typename  
+        }  __typename
       }
-    }
-    
     fragment User on users {
       id
       name
-      profile_image_url
+      profile_image_url  __typename
       }
-    
     fragment Visualization on visualizations {
       id
       type
@@ -77,12 +82,14 @@ FIND_DASHBOARD_POST = """
         query_id
         name
         description
-        user_id
-        user_name
-        profile_image_url
         show_watermark
         parameters
-      }
+        user {
+            id
+            name
+            profile_image_url      __typename    
+        }    __typename  
+      }  __typename
     }
 """
 

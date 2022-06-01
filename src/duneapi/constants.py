@@ -22,8 +22,15 @@ FIND_DASHBOARD_POST = """
       updated_at
       tags
       user {
-        ...User
+      ...User 
       }
+    forked_dashboard {    
+        slug    
+        name    
+        user {      
+            name      
+        }  
+    }
       text_widgets {
         id
         created_at
@@ -57,16 +64,14 @@ FIND_DASHBOARD_POST = """
         score_1h
         score_4h
         score_24h
-        updated_at
+        updated_at  
       }
-    }
-    
+      }
     fragment User on users {
       id
       name
       profile_image_url
       }
-    
     fragment Visualization on visualizations {
       id
       type
@@ -77,11 +82,13 @@ FIND_DASHBOARD_POST = """
         query_id
         name
         description
-        user_id
-        user_name
-        profile_image_url
         show_watermark
         parameters
+        user {
+            id
+            name
+            profile_image_url      
+        }  
       }
     }
 """

@@ -8,7 +8,7 @@ FIND_DASHBOARD_POST = """
         ...Dashboard
         favorite_dashboards(where: {user_id: {_eq: $session_id}}, limit: 1) {
           created_at      
-          }  
+          }
       }
     }
     

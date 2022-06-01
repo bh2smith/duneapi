@@ -7,8 +7,8 @@ FIND_DASHBOARD_POST = """
       dashboards(where: {slug: {_eq: $slug}, user: {name: {_eq: $user}}}) {
         ...Dashboard
         favorite_dashboards(where: {user_id: {_eq: $session_id}}, limit: 1) {
-          created_at      
-          }
+          created_at
+        }
       }
     }
     
@@ -36,7 +36,7 @@ FIND_DASHBOARD_POST = """
         created_at
         updated_at
         text
-        options  
+        options
       }
       visualization_widgets {
         id
@@ -44,8 +44,8 @@ FIND_DASHBOARD_POST = """
         updated_at
         options
         visualization {
-          ...Visualization      
-        }  
+          ...Visualization
+        }
       }
       param_widgets {
         id
@@ -55,17 +55,17 @@ FIND_DASHBOARD_POST = """
         dashboard_id
         options
         created_at
-        updated_at  
+        updated_at
       }
       dashboard_favorite_count_all {
-        favorite_count  
+        favorite_count
       }
       trending_scores {
         score_1h
         score_4h
         score_24h
         updated_at  
-        }
+      }
       }
     fragment User on users {
       id

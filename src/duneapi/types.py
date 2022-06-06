@@ -204,15 +204,12 @@ class QueryParameter:
         return cls(name, ParameterType.DATE, value)
 
     def _value_str(self) -> str:
-        try:
-            return {
-                ParameterType.TEXT: str(self.value),
-                ParameterType.NUMBER: str(self.value),
-                # This is the postgres string format of timestamptz
-                ParameterType.DATE: str(self.value.strftime("%Y-%m-%d %H:%M:%S")),
-            }[self.type]
-        except KeyError as err:
-            raise TypeError(f"Type {self.type} not recognized!") from err
+        if self.type in (ParameterType.TEXT, ParameterType.NUMBER):
+            return str(self.value)
+        if self.type == ParameterType.DATE:
+            # This is the postgres string format of timestamptz
+            return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
+        raise TypeError(f"Type {self.type} not recognized!")
 
     def to_dict(self) -> dict[str, str]:
         """Converts QueryParameter into string json format accepted by Dune API"""

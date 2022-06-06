@@ -26,5 +26,5 @@ setuptools.setup(
     package_data={
         "duneapi": ["py.typed"],
     },
-    python_requires=">=3.10",
+    python_requires=">=3.9",
 )

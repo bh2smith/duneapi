@@ -95,21 +95,20 @@ class Network(Enum):
 
     def __str__(self) -> str:
         result = super.__str__(self)
-        match self:
-            case Network.SOLANA:
-                result = "Solana"
-            case Network.MAINNET:
-                result = "Ethereum Mainnet"
-            case Network.GCHAIN:
-                result = "Gnosis Chain"
-            case Network.POLYGON:
-                result = "Polygon"
-            case Network.OPTIMISM_V1:
-                result = "Optimism (OVM 1.0)"
-            case Network.OPTIMISM_V2:
-                result = "Optimism (OVM 2.0)"
-            case Network.BINANCE:
-                result = "Binance Smart Chain"
+        if self == Network.SOLANA:
+            result = "Solana"
+        elif self == Network.MAINNET:
+            result = "Ethereum Mainnet"
+        elif self == Network.GCHAIN:
+            result = "Gnosis Chain"
+        elif self == Network.POLYGON:
+            result = "Polygon"
+        elif self == Network.OPTIMISM_V1:
+            result = "Optimism (OVM 1.0)"
+        elif self == Network.OPTIMISM_V2:
+            result = "Optimism (OVM 2.0)"
+        elif self == Network.BINANCE:
+            result = "Binance Smart Chain"
         return result
 
     @classmethod
@@ -205,15 +204,11 @@ class QueryParameter:
         return cls(name, ParameterType.DATE, value)
 
     def _value_str(self) -> str:
-        match self.type:
-            case (ParameterType.TEXT):
-                return str(self.value)
-            case (ParameterType.NUMBER):
-                return str(self.value)
-            case (ParameterType.DATE):
-                # This is the postgres string format of timestamptz
-                return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
-
+        if self.type in (ParameterType.TEXT, ParameterType.NUMBER):
+            return str(self.value)
+        if self.type == ParameterType.DATE:
+            # This is the postgres string format of timestamptz
+            return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
         raise TypeError(f"Type {self.type} not recognized!")
 
     def to_dict(self) -> dict[str, str]:
@@ -232,16 +227,16 @@ class QueryParameter:
         TODO - this could probably be done similar to the __init__ method of MetaData
         """
         name, value = obj["key"], obj["value"]
-        match ParameterType.from_string(obj["type"]):
-            case ParameterType.DATE:
-                return cls.date_type(name, value)
-            case ParameterType.TEXT:
-                assert isinstance(value, str)
-                return cls.text_type(name, value)
-            case ParameterType.NUMBER:
-                if isinstance(value, str):
-                    value = float(value) if "." in value else int(value)
-                return cls.number_type(name, value)
+        p_type = ParameterType.from_string(obj["type"])
+        if p_type == ParameterType.DATE:
+            return cls.date_type(name, value)
+        if p_type == ParameterType.TEXT:
+            assert isinstance(value, str)
+            return cls.text_type(name, value)
+        if p_type == ParameterType.NUMBER:
+            if isinstance(value, str):
+                value = float(value) if "." in value else int(value)
+            return cls.number_type(name, value)
         raise ValueError(f"Could not parse Query parameter from {obj}")
 
     def __str__(self) -> str:

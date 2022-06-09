@@ -1,4 +1,5 @@
 select "number",
+       miner,
        size,
        time,
        CONCAT('0x', ENCODE(hash, 'hex')) as block_hash,

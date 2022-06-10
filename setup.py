@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="duneapi",
-    version="3.0.6",
+    version="3.0.7",
     author="Benjamin H. Smith",
     author_email="bh2smith@gmail.com",
     description="A simple framework for interacting with Dune Analytics' unsupported API.",
@@ -20,7 +20,12 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    install_requires=["requests>=2.27.1", "types-requests>=2.27.13"],
+    install_requires=[
+        "requests>=2.27.1",
+        "types-requests>=2.27.13",
+        "python-dotenv>=0.20.0",
+        "web3>=5.28.0"
+    ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     package_data={

@@ -4,8 +4,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
+from src.duneapi.file_io import write_to_csv, File
 from src.duneapi.api import DuneAPI
-from src.duneapi.types import Network, QueryParameter, DuneQuery
+from src.duneapi.types import Network, QueryParameter, DuneQuery, Address
 from src.duneapi.util import open_query
 
 
@@ -14,6 +15,7 @@ class Record:
     """Arbitrary record with a few different data types"""
 
     string: str
+    address: Address
     integer: int
     decimal: float
     time: datetime
@@ -23,6 +25,7 @@ class Record:
         """Constructs Record from Dune Data as string dict"""
         return cls(
             string=obj["block_hash"],
+            address=Address(obj["miner"]),
             integer=int(obj["number"]),
             decimal=float(obj["tx_fees"]),
             # Dune timestamps are UTC!
@@ -49,3 +52,4 @@ def fetch_records(dune: DuneAPI) -> list[Record]:
 if __name__ == "__main__":
     records = fetch_records(DuneAPI.new_from_environment())
     print("First result:", records[0])
+    write_to_csv(data_list=records, outfile=File("example-output.csv"))

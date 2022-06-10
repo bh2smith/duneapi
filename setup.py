@@ -24,7 +24,7 @@ setuptools.setup(
         "requests>=2.27.1",
         "types-requests>=2.27.13",
         "python-dotenv>=0.20.0",
-        "web3>=5.28.0"
+        "web3>=5.28.0",
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),

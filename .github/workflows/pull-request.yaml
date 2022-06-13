@@ -25,4 +25,3 @@ jobs:
           DUNE_QUERY_ID: ${{ secrets.DUNE_QUERY_ID }}
         run:
           python -m pytest tests/e2e
-

@@ -1,0 +1,62 @@
+name: PostgreSQL service example
+on: push
+
+jobs:
+  # Label of the container job
+  db-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+
+    # Service containers to run with `runner-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Install Requirements
+        run: pip install -r requirements.txt
+
+      - name: Install local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo apt-get update
+          sudo apt-get -yqq install postgresql postgresql-contrib
+
+      - name: Boot local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo service postgresql start
+
+      - name: Configure local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
+
+      - name: Connect to PostgreSQL
+        # Runs a script that creates a PostgreSQL table, populates
+        # the table with data, and then retrieves the data.
+        run: python -m pytest tests/db
+        # Environment variables used by the `pg_client.py` script to create a new PostgreSQL table.
+        env:
+          # The hostname used to communicate with the PostgreSQL service container
+          POSTGRES_HOST: localhost
+          # The default PostgreSQL port
+          POSTGRES_PORT: 5432

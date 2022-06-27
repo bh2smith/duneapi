@@ -286,7 +286,7 @@ class QueryParameter:
             "value": self._value_str(),
         }
         if self.type == ParameterType.ENUM:
-            results["enumOptions"] = self.options
+            results["enumOptions"] = self.options  # type: ignore
         return results
 
     @classmethod

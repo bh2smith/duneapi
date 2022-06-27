@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Collection, Optional, Union
+from typing import Any, Collection, Optional
 from web3 import Web3
 
 from dotenv import load_dotenv

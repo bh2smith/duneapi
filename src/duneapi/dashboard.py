@@ -57,7 +57,7 @@ class DuneDashboard:
             self.name == other.name,
             self.slug == other.slug,
             self.url == other.url,
-            self.queries == other.queries,
+            set(self.queries) == set(other.queries),
         ]
         log.debug(f"Equality conditions: {equality_conditions}")
         return all(equality_conditions)

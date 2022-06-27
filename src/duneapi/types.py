@@ -211,9 +211,9 @@ class ParameterType(Enum):
             r"date": cls.DATE,
             r"enum": cls.ENUM
         }
-        for pattern, network in patterns.items():
+        for pattern, param in patterns.items():
             if re.match(pattern, type_str, re.IGNORECASE):
-                return network
+                return param
         raise ValueError(f"could not parse Network from '{type_str}'")
 
 

@@ -164,10 +164,7 @@ class DuneDashboard:
                     "description": query.description,
                     "query_file": query_file,
                     "network": str(query.network),
-                    "parameters": [
-                        {"key": p.key, "value": p.value, "type": p.type.value}
-                        for p in query.parameters
-                    ],
+                    "parameters": [p.to_dict() for p in query.parameters],
                 }
                 query_dicts.append(query_config)
 

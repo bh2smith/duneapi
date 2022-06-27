@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Collection, Optional
+from typing import Any, Collection, Optional, Union
 from web3 import Web3
 
 from dotenv import load_dotenv
@@ -278,15 +278,15 @@ class QueryParameter:
             return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
         raise TypeError(f"Type {self.type} not recognized!")
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, str | list[str]]:
         """Converts QueryParameter into string json format accepted by Dune API"""
-        results = {
+        results: dict[str, str | list[str]] = {
             "key": self.key,
             "type": self.type.value,
             "value": self._value_str(),
         }
         if self.type == ParameterType.ENUM:
-            results["enumOptions"] = self.options  # type: ignore
+            results["enumOptions"] = self.options
         return results
 
     @classmethod
@@ -423,7 +423,7 @@ class DuneQuery:
             query_id=tile.query_id,
         )
 
-    def _request_parameters(self) -> list[dict[str, str]]:
+    def _request_parameters(self) -> list[dict[str, str | list[str]]]:
         return [p.to_dict() for p in self.parameters]
 
     def upsert_query_post(self) -> Post:

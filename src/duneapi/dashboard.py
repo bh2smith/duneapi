@@ -104,6 +104,7 @@ class DuneDashboard:
                 key_map={},
             )
             response = api.post_dune_request(post)
+            log.debug(f"Received Response {response.json()}")
             query_data = response.json()["data"]["queries"][0]
             # Filtering out queries that are not owned by logged-in user.
             if query_data["user"]["name"] == api.username:

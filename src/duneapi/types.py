@@ -197,6 +197,7 @@ class ParameterType(Enum):
     TEXT = "text"
     NUMBER = "number"
     DATE = "datetime"
+    ENUM = "enum"
 
     @classmethod
     def from_string(cls, type_str: str) -> ParameterType:
@@ -208,6 +209,7 @@ class ParameterType(Enum):
             r"text": cls.TEXT,
             r"number": cls.NUMBER,
             r"date": cls.DATE,
+            r"enum": cls.ENUM
         }
         for pattern, network in patterns.items():
             if re.match(pattern, type_str, re.IGNORECASE):
@@ -223,10 +225,12 @@ class QueryParameter:
         name: str,
         parameter_type: ParameterType,
         value: Any,
+        options: Optional[list[str]] = None
     ):
         self.key: str = name
         self.type: ParameterType = parameter_type
         self.value = value
+        self.options = options
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, QueryParameter):
@@ -259,8 +263,13 @@ class QueryParameter:
             value = postgres_date(value)
         return cls(name, ParameterType.DATE, value)
 
+    @classmethod
+    def enum_type(cls, name: str, value: str, options: list[str]) -> QueryParameter:
+        """Constructs a Query parameter of type number"""
+        return cls(name, ParameterType.ENUM, value, options)
+
     def _value_str(self) -> str:
-        if self.type in (ParameterType.TEXT, ParameterType.NUMBER):
+        if self.type in (ParameterType.TEXT, ParameterType.NUMBER, ParameterType.ENUM):
             return str(self.value)
         if self.type == ParameterType.DATE:
             # This is the postgres string format of timestamptz
@@ -274,6 +283,8 @@ class QueryParameter:
             "type": self.type.value,
             "value": self._value_str(),
         }
+        if self.type == ParameterType.ENUM:
+            results["enumOptions"] = self.options
         return results
 
     @classmethod
@@ -293,6 +304,8 @@ class QueryParameter:
             if isinstance(value, str):
                 value = float(value) if "." in value else int(value)
             return cls.number_type(name, value)
+        if p_type == ParameterType.ENUM:
+            return cls.enum_type(name, value, obj["enumOptions"])
         raise ValueError(f"Could not parse Query parameter from {obj}")
 
     def __str__(self) -> str:

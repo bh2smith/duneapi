@@ -209,7 +209,7 @@ class ParameterType(Enum):
             r"text": cls.TEXT,
             r"number": cls.NUMBER,
             r"date": cls.DATE,
-            r"enum": cls.ENUM
+            r"enum": cls.ENUM,
         }
         for pattern, param in patterns.items():
             if re.match(pattern, type_str, re.IGNORECASE):
@@ -225,8 +225,10 @@ class QueryParameter:
         name: str,
         parameter_type: ParameterType,
         value: Any,
-        options: Optional[list[str]] = None
+        options: Optional[list[str]] = None,
     ):
+        if not options:
+            options = []
         self.key: str = name
         self.type: ParameterType = parameter_type
         self.value = value
@@ -276,7 +278,7 @@ class QueryParameter:
             return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
         raise TypeError(f"Type {self.type} not recognized!")
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts QueryParameter into string json format accepted by Dune API"""
         results = {
             "key": self.key,

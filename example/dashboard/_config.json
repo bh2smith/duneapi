@@ -61,6 +61,26 @@
           "type": "number"
         }
       ]
+    },
+    {
+      "id": 971694,
+      "name": "Enum Demo Max Price",
+      "description": "",
+      "query_file": "enum-demo-max-price.sql",
+      "network": "Ethereum Mainnet",
+      "parameters": [
+        {
+          "key": "EnumParam",
+          "type": "enum",
+          "value": "WETH",
+          "enumOptions": [
+            "WETH",
+            "GNO",
+            "COW",
+            "BAL"
+          ]
+        }
+      ]
     }
   ]
 }

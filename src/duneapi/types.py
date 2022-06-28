@@ -197,6 +197,7 @@ class ParameterType(Enum):
     TEXT = "text"
     NUMBER = "number"
     DATE = "datetime"
+    ENUM = "enum"
 
     @classmethod
     def from_string(cls, type_str: str) -> ParameterType:
@@ -208,10 +209,11 @@ class ParameterType(Enum):
             r"text": cls.TEXT,
             r"number": cls.NUMBER,
             r"date": cls.DATE,
+            r"enum": cls.ENUM,
         }
-        for pattern, network in patterns.items():
+        for pattern, param in patterns.items():
             if re.match(pattern, type_str, re.IGNORECASE):
-                return network
+                return param
         raise ValueError(f"could not parse Network from '{type_str}'")
 
 
@@ -223,10 +225,14 @@ class QueryParameter:
         name: str,
         parameter_type: ParameterType,
         value: Any,
+        options: Optional[list[str]] = None,
     ):
+        if not options:
+            options = []
         self.key: str = name
         self.type: ParameterType = parameter_type
         self.value = value
+        self.options = options
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, QueryParameter):
@@ -259,21 +265,28 @@ class QueryParameter:
             value = postgres_date(value)
         return cls(name, ParameterType.DATE, value)
 
+    @classmethod
+    def enum_type(cls, name: str, value: str, options: list[str]) -> QueryParameter:
+        """Constructs a Query parameter of type number"""
+        return cls(name, ParameterType.ENUM, value, options)
+
     def _value_str(self) -> str:
-        if self.type in (ParameterType.TEXT, ParameterType.NUMBER):
+        if self.type in (ParameterType.TEXT, ParameterType.NUMBER, ParameterType.ENUM):
             return str(self.value)
         if self.type == ParameterType.DATE:
             # This is the postgres string format of timestamptz
             return str(self.value.strftime("%Y-%m-%d %H:%M:%S"))
         raise TypeError(f"Type {self.type} not recognized!")
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, str | list[str]]:
         """Converts QueryParameter into string json format accepted by Dune API"""
-        results = {
+        results: dict[str, str | list[str]] = {
             "key": self.key,
             "type": self.type.value,
             "value": self._value_str(),
         }
+        if self.type == ParameterType.ENUM:
+            results["enumOptions"] = self.options
         return results
 
     @classmethod
@@ -293,6 +306,8 @@ class QueryParameter:
             if isinstance(value, str):
                 value = float(value) if "." in value else int(value)
             return cls.number_type(name, value)
+        if p_type == ParameterType.ENUM:
+            return cls.enum_type(name, value, obj["enumOptions"])
         raise ValueError(f"Could not parse Query parameter from {obj}")
 
     def __str__(self) -> str:
@@ -408,7 +423,7 @@ class DuneQuery:
             query_id=tile.query_id,
         )
 
-    def _request_parameters(self) -> list[dict[str, str]]:
+    def _request_parameters(self) -> list[dict[str, str | list[str]]]:
         return [p.to_dict() for p in self.parameters]
 
     def upsert_query_post(self) -> Post:

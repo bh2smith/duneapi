@@ -57,7 +57,7 @@ class DuneDashboard:
             self.name == other.name,
             self.slug == other.slug,
             self.url == other.url,
-            self.queries == other.queries,
+            set(self.queries) == set(other.queries),
         ]
         log.debug(f"Equality conditions: {equality_conditions}")
         return all(equality_conditions)
@@ -104,6 +104,7 @@ class DuneDashboard:
                 key_map={},
             )
             response = api.post_dune_request(post)
+            log.debug(f"Received Response {response.json()}")
             query_data = response.json()["data"]["queries"][0]
             # Filtering out queries that are not owned by logged-in user.
             if query_data["user"]["name"] == api.username:
@@ -163,10 +164,7 @@ class DuneDashboard:
                     "description": query.description,
                     "query_file": query_file,
                     "network": str(query.network),
-                    "parameters": [
-                        {"key": p.key, "value": p.value, "type": p.type.value}
-                        for p in query.parameters
-                    ],
+                    "parameters": [p.to_dict() for p in query.parameters],
                 }
                 query_dicts.append(query_config)
 

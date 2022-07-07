@@ -105,8 +105,7 @@ class DuneAPI:
         if response.status_code == 200:
             self.token = response.json().get("token")
         else:
-            # TODO - should probably raise a different exception here.
-            raise SystemExit(response)
+            raise RuntimeError("Failed to fetch auth token", response.text)
 
     def refresh_auth_token(self) -> None:
         """Set authorization token for the user"""

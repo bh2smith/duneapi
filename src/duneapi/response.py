@@ -13,9 +13,14 @@ def pre_validate_response(response: Response, key_map: KeyMap) -> dict[str, Any]
     first level inner keys agree with what the caller expects.
     """
     if response.status_code != 200:
-        raise SystemExit("Dune post failed with", response)
+        raise RuntimeError("Dune post failed with", response)
 
     response_json = response.json()
+    if "errors" in response_json.keys() and len(response_json["errors"]) > 0:
+        raise RuntimeError(
+            f"Dune API Request failed with errors {response_json['errors']}"
+        )
+
     if "data" not in response_json.keys():
         raise ValueError(f"response json {response_json} missing 'data' key")
 

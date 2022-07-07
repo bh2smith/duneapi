@@ -9,4 +9,4 @@ out/
 
 *.egg-info/
 dist/
-
+_version.py

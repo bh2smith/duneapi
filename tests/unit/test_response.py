@@ -25,7 +25,7 @@ class TestOperations(unittest.TestCase):
 
     def test_pre_validation_errors(self):
         self.response.status_code = 1
-        with self.assertRaises(SystemExit) as err:
+        with self.assertRaises(RuntimeError) as err:
             pre_validate_response(self.response, {})
         self.assertEqual(
             str(err.exception), "('Dune post failed with', <Response [1]>)"

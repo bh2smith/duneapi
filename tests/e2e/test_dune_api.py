@@ -1,7 +1,7 @@
 import unittest
 
-from src.duneapi.api import DuneAPI
-from src.duneapi.types import Network, QueryParameter, DuneQuery
+from duneapi.api import DuneAPI
+from duneapi.types import Network, QueryParameter, DuneQuery
 
 
 class TestDuneAnalytics(unittest.TestCase):

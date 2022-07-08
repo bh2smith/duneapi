@@ -1,9 +1,9 @@
 import json
 import unittest
 
-from src.duneapi.api import DuneAPI
-from src.duneapi.dashboard import DuneDashboard
-from src.duneapi.types import DashboardTile, DuneQuery
+from duneapi.api import DuneAPI
+from duneapi.dashboard import DuneDashboard
+from duneapi.types import DashboardTile, DuneQuery
 
 
 class MyTestCase(unittest.TestCase):
@@ -91,12 +91,12 @@ class MyTestCase(unittest.TestCase):
             ],
         }
 
-        with self.assertLogs("src.duneapi.dashboard", level="WARN") as cm:
+        with self.assertLogs("duneapi.dashboard", level="WARN") as cm:
             DuneDashboard.from_json(self.dune, minimal_input)
         self.assertEqual(
             cm.output,
             [
-                "WARNING:src.duneapi.dashboard:Duplicate Query Detected [(\"select 10 - '{{IntParameter}}' as value\", <Network.GCHAIN: 6>)]"
+                "WARNING:duneapi.dashboard:Duplicate Query Detected [(\"select 10 - '{{IntParameter}}' as value\", <Network.GCHAIN: 6>)]"
             ],
         )
 

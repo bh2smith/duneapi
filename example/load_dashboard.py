@@ -1,5 +1,5 @@
-from src.duneapi.api import DuneAPI
-from src.duneapi.dashboard import DuneDashboard
+from duneapi.api import DuneAPI
+from duneapi.dashboard import DuneDashboard
 
 
 if __name__ == "__main__":

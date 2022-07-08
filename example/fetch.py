@@ -4,10 +4,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-from src.duneapi.file_io import write_to_csv, File
-from src.duneapi.api import DuneAPI
-from src.duneapi.types import Network, QueryParameter, DuneQuery, Address
-from src.duneapi.util import open_query
+from duneapi.file_io import write_to_csv, File
+from duneapi.api import DuneAPI
+from duneapi.types import Network, QueryParameter, DuneQuery, Address
+from duneapi.util import open_query
 
 
 @dataclass

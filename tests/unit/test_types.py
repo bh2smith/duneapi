@@ -2,7 +2,7 @@ import datetime
 import json
 import unittest
 
-from src.duneapi.types import Network, MetaData, QueryResults, QueryParameter, Address
+from duneapi.types import Network, MetaData, QueryResults, QueryParameter, Address
 
 
 class TestAddress(unittest.TestCase):

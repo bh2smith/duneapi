@@ -15,7 +15,7 @@ jobs:
       - name: Install Requirements
         run: pip install -r requirements.txt
       - name: Lint, Format and Types
-        run: pylint src/ && black --check ./ && mypy src --strict
+        run: pylint duneapi/ && black --check ./ && mypy duneapi --strict
       - name: Unit Tests
         run: python -m pytest tests/unit
       - name: End to End Tests

@@ -150,22 +150,16 @@ class Network(Enum):
     OPTIMISM_V2 = 10
 
     def __str__(self) -> str:
-        result = super.__str__(self)
-        if self == Network.SOLANA:
-            result = "Solana"
-        elif self == Network.MAINNET:
-            result = "Ethereum Mainnet"
-        elif self == Network.GCHAIN:
-            result = "Gnosis Chain"
-        elif self == Network.POLYGON:
-            result = "Polygon"
-        elif self == Network.OPTIMISM_V1:
-            result = "Optimism (OVM 1.0)"
-        elif self == Network.OPTIMISM_V2:
-            result = "Optimism (OVM 2.0)"
-        elif self == Network.BINANCE:
-            result = "Binance Smart Chain"
-        return result
+        string_map = {
+            Network.SOLANA: "Solana",
+            Network.MAINNET: "Ethereum Mainnet",
+            Network.GCHAIN: "Gnosis Chain",
+            Network.POLYGON: "Polygon",
+            Network.OPTIMISM_V1: "Optimism (OVM 1.0)",
+            Network.OPTIMISM_V2: "Optimism (OVM 2.0)",
+            Network.BINANCE: "Binance Smart Chain",
+        }
+        return string_map.get(self, "Unknown Network")
 
     @classmethod
     def from_string(cls, network_str: str) -> Network:

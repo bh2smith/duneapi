@@ -1,7 +1,7 @@
 import unittest
 
-from src.duneapi.api import DuneAPI
-from src.duneapi.dashboard import DuneDashboard
+from duneapi.api import DuneAPI
+from duneapi.dashboard import DuneDashboard
 
 
 class TestDashboard(unittest.TestCase):

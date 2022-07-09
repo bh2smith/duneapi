@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import time
+
 from typing import Any
 
 from .api import DuneAPI
@@ -214,7 +216,23 @@ class DuneDashboard:
         """Creates a dune connection and updates/refreshes all dashboard queries"""
         for tile in self.queries:
             self.api.initiate_query(tile)
-            self.api.execute_query(tile)
+            retries, success = 0, False
+            # TODO - this is not a very good way of retrying
+            # Should create custom errors (instead of using Runtime everywhere)
+            while not success and retries < 3:
+                try:
+                    self.api.execute_query(tile)
+                    success = True
+                except RuntimeError as err:
+                    retries += 1
+                    sleep_time = 2 * retries
+                    log.warning(
+                        f"Query execution failed due to {err}. "
+                        f"Sleeping {sleep_time} seconds and trying again."
+                    )
+                    time.sleep(sleep_time)
+            if not success:
+                raise SystemExit("Failed to update dashboard, max retries exceeded!")
 
     def __str__(self) -> str:
         names = "\n".join(

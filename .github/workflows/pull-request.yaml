@@ -1,4 +1,4 @@
-name: pull request
+name: CI
 on:
   pull_request:
   push:
@@ -8,27 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Python 3.10
+      - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
+          python-version: '3.9'
       - name: Install Requirements
-        run:
-          pip install -r requirements.txt
-      - name: Lint
-        run:
-          pylint src/
-      - name: Black
-        run:
-          black --check ./
+        run: pip install -r requirements.txt
+      - name: Lint, Format and Types
+        run: pylint duneapi/ && black --check ./ && mypy duneapi --strict
       - name: Unit Tests
-        run:
-          python -m pytest tests/
+        run: python -m pytest tests/unit
       - name: End to End Tests
         env:
           DUNE_USER: ${{ secrets.DUNE_USER }}
           DUNE_PASSWORD: ${{ secrets.DUNE_PASSWORD }}
           DUNE_QUERY_ID: ${{ secrets.DUNE_QUERY_ID }}
         run:
-          python -m pytest e2e/
+          python -m pytest tests/e2e
 

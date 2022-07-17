@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "name": "Demo Dashboard",
+    "slug": "Demo-Dashboard",
+    "user": "bh2smith",
+    "query_path": "./example/dashboard"
+  },
+  "queries": [
+    {
+      "id": 533353,
+      "name": "Query1",
+      "description": "Description of Example 1",
+      "query_file": "query1.sql",
+      "requires": "./example/dashboard/base_query.sql",
+      "network": "Ethereum Mainnet",
+      "parameters": []
+    },
+    {
+      "id": 585223,
+      "name": "Query2 polygon",
+      "description": "Another Description of Example 2",
+      "query_file": "query2-polygon.sql",
+      "network": "Polygon",
+      "parameters": [
+        {
+          "key": "Number",
+          "value": 1337,
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "id": 666726,
+      "name": "Blocks Between",
+      "description": "",
+      "query_file": "blocks-between.sql",
+      "network": "Ethereum Mainnet",
+      "parameters": [
+        {
+          "key": "Begin",
+          "value": "2022-03-10 00:00:00",
+          "type": "datetime"
+        },
+        {
+          "key": "End",
+          "value": "2022-03-10 00:00:30",
+          "type": "datetime"
+        }
+      ]
+    },
+    {
+      "id": 533351,
+      "name": "Query2",
+      "description": "Description of Example 2",
+      "query_file": "query2-polygon.sql",
+      "network": "Gnosis Chain",
+      "parameters": [
+        {
+          "key": "Number",
+          "value": 1337,
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "id": 971694,
+      "name": "Enum Demo Max Price",
+      "description": "",
+      "query_file": "enum-demo-max-price.sql",
+      "network": "Ethereum Mainnet",
+      "parameters": [
+        {
+          "key": "EnumParam",
+          "type": "enum",
+          "value": "WETH",
+          "enumOptions": [
+            "WETH",
+            "GNO",
+            "COW",
+            "BAL"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Collection, Optional
@@ -361,12 +361,12 @@ class DashboardTile:
 class DuneQuery:
     """Contains all the relevant data necessary to initiate a Dune Query"""
 
-    name: str
-    description: str
-    raw_sql: str
-    network: Network
-    parameters: list[QueryParameter]
     query_id: int
+    raw_sql: str = ""
+    name: str = ""
+    description: str = ""
+    network: Network = Network.MAINNET
+    parameters: list[QueryParameter] = field(default_factory=list)
 
     def __hash__(self) -> int:
         return hash(self.query_id)

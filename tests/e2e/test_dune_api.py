@@ -31,6 +31,11 @@ class TestDuneAnalytics(unittest.TestCase):
     def test_execute_query(self):
         self.assertNotEqual(None, self.dune.execute_query(self.mainnet_query))
 
+    def test_execute_query(self):
+        q_id = self.mainnet_query.query_id
+        params = self.mainnet_query.parameters
+        self.assertNotEqual(None, self.dune.execute(q_id, params))
+
     def test_interface(self):
         """
         This test indirectly touches all of

@@ -652,23 +652,22 @@ class DuneQuery:
             key_map={"data": {"view_queue_positions", "jobs_by_pk"}},
         )
 
-    def execute_query_post(self) -> Post:
-        """Returns json data for a post of type ExecuteQuery"""
-        query = """
-        mutation ExecuteQuery($query_id: Int!, $parameters: [Parameter!]!) {
-          execute_query(query_id: $query_id, parameters: $parameters) {
-            job_id
-          }
-        }
-        """
-        return Post(
-            data={
-                "operationName": "ExecuteQuery",
-                "variables": {
-                    "query_id": self.query_id,
-                    "parameters": [p.to_dict() for p in self.parameters],
-                },
-                "query": query,
+
+def execute_query_post_data(query_id: int, params: list[QueryParameter]) -> Post:
+    """Returns json data for a post of type ExecuteQuery"""
+    return Post(
+        data={
+            "operationName": "ExecuteQuery",
+            "variables": {
+                "query_id": query_id,
+                "parameters": [p.to_dict() for p in params],
             },
-            key_map={"execute_query": {"job_id"}},
-        )
+            "query": """
+                mutation ExecuteQuery($query_id: Int!, $parameters: [Parameter!]!) {
+                  execute_query(query_id: $query_id, parameters: $parameters) {
+                    job_id
+                  }
+                }""",
+        },
+        key_map={"execute_query": {"job_id"}},
+    )

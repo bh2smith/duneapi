@@ -221,7 +221,7 @@ class DuneDashboard:
             # Should create custom errors (instead of using Runtime everywhere)
             while not success and retries < 3:
                 try:
-                    self.api.execute_query(tile)
+                    self.api.execute(tile.query_id, tile.parameters)
                     success = True
                 except RuntimeError as err:
                     retries += 1

@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import os
 import time
+from typing import Optional
 
+from deprecated.classic import deprecated
 from dotenv import load_dotenv
 from requests import Session, Response
 
@@ -16,7 +18,14 @@ from .response import (
     validate_and_parse_dict_response,
     validate_and_parse_list_response,
 )
-from .types import DuneRecord, QueryResults, DuneQuery, Post
+from .types import (
+    DuneRecord,
+    QueryResults,
+    DuneQuery,
+    Post,
+    QueryParameter,
+    execute_query_post_data,
+)
 
 log = set_log(__name__)
 
@@ -122,9 +131,24 @@ class DuneAPI:
         # Return True to indicate method was success.
         return True
 
+    @deprecated(
+        version="3.1.0",
+        reason="Execution only requires a query_id and parameters; use execute",
+    )
     def execute_query(self, query: DuneQuery) -> str:
         """Executes query at query_id"""
-        post_data = query.execute_query_post()
+        post_data = execute_query_post_data(query.query_id, query.parameters)
+        response = self.post_dune_request(post_data)
+        validate_and_parse_dict_response(response, post_data.key_map)
+        return str(response.json()["data"]["execute_query"]["job_id"])
+
+    def execute(
+        self, query_id: int, parameters: Optional[list[QueryParameter]] = None
+    ) -> str:
+        """Executes existing query at `query_id` with `parameters`"""
+        if parameters is None:
+            parameters = []
+        post_data = execute_query_post_data(query_id, parameters)
         response = self.post_dune_request(post_data)
         validate_and_parse_dict_response(response, post_data.key_map)
         return str(response.json()["data"]["execute_query"]["job_id"])
@@ -166,7 +190,7 @@ class DuneAPI:
         Executes query by ID and awaits completion.
         :return: parsed list of dict records returned from query
         """
-        job_id = self.execute_query(query)
+        job_id = self.execute(query.query_id, query.parameters)
         data_set = self.get_results(job_id)
         log.info(f"got {len(data_set)} records from last query")
         return data_set
